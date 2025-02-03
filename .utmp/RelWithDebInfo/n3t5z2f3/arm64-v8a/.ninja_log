@@ -1,0 +1,19 @@
+# ninja log v5
+78	326	7598541345716200	FramePacing/CMakeFiles/swappywrapper.dir/UnitySwappyWrapper.cpp.o	65514ed11e12ff6d
+30	2365	7598579220037458	GameActivity/CMakeFiles/game.dir/UGAApplication.cpp.o	bd9c677a4de12409
+331	689	7598541348912986	C:/Users/Nik0la/BOKI/unity/Soliter/Library/Bee/Android/Prj/IL2CPP/Gradle/unityLibrary/build/intermediates/cxx/RelWithDebInfo/n3t5z2f3/obj/arm64-v8a/libswappywrapper.so	b11f5fbddb7ef8f0
+76	1633	7598579212664087	GameActivity/CMakeFiles/game.dir/UGAInputKeyEvent.cpp.o	c5637c2196c85dde
+8	1626	7598579212552022	GameActivity/CMakeFiles/game.dir/UGAEntry.cpp.o	d5a3a69f7740e52c
+49	1880	7598579215231317	GameActivity/CMakeFiles/game.dir/UGASoftKeyboard.cpp.o	e480f7439e1bd96f
+39	1871	7598579215120100	GameActivity/CMakeFiles/game.dir/UGADebug.cpp.o	839dd24c2552f9d4
+64	1678	7598579213185472	GameActivity/CMakeFiles/game.dir/UGAInputMotionEvent.cpp.o	508957af907bb3a9
+19	2093	7598579217327962	GameActivity/CMakeFiles/game.dir/UGAInput.cpp.o	fcce48cdad3fd636
+2365	2582	7598579222114055	C:/Users/Nik0la/BOKI/unity/Soliter/Library/Bee/Android/Prj/IL2CPP/Gradle/unityLibrary/build/intermediates/cxx/RelWithDebInfo/n3t5z2f3/obj/arm64-v8a/libgame.so	a731c0c214d890f
+83	1329	7598684116977959	GameActivity/CMakeFiles/game.dir/UGAInputKeyEvent.cpp.o	c5637c2196c85dde
+50	1367	7598684117415544	GameActivity/CMakeFiles/game.dir/UGAEntry.cpp.o	d5a3a69f7740e52c
+101	1477	7598684118465277	GameActivity/CMakeFiles/game.dir/UGAInputMotionEvent.cpp.o	508957af907bb3a9
+70	1604	7598684119753560	GameActivity/CMakeFiles/game.dir/UGASoftKeyboard.cpp.o	e480f7439e1bd96f
+19	1721	7598684120891735	GameActivity/CMakeFiles/game.dir/UGADebug.cpp.o	839dd24c2552f9d4
+37	2029	7598684123971380	GameActivity/CMakeFiles/game.dir/UGAInput.cpp.o	fcce48cdad3fd636
+8	2220	7598684125876350	GameActivity/CMakeFiles/game.dir/UGAApplication.cpp.o	bd9c677a4de12409
+2220	2447	7598684128069582	C:/Users/Nik0la/BOKI/unity/Soliter/Library/Bee/Android/Prj/IL2CPP/Gradle/unityLibrary/build/intermediates/cxx/RelWithDebInfo/n3t5z2f3/obj/arm64-v8a/libgame.so	a731c0c214d890f

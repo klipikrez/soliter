@@ -1,0 +1,5 @@
+C:/Users/Nik0la/BOKI/unity/Soliter/.utmp/RelWithDebInfo/v3x1a5k7/arm64-v8a/CMakeFiles/edit_cache.dir
+C:/Users/Nik0la/BOKI/unity/Soliter/.utmp/RelWithDebInfo/v3x1a5k7/arm64-v8a/CMakeFiles/rebuild_cache.dir
+C:/Users/Nik0la/BOKI/unity/Soliter/.utmp/RelWithDebInfo/v3x1a5k7/arm64-v8a/GameActivity/CMakeFiles/game.dir
+C:/Users/Nik0la/BOKI/unity/Soliter/.utmp/RelWithDebInfo/v3x1a5k7/arm64-v8a/GameActivity/CMakeFiles/edit_cache.dir
+C:/Users/Nik0la/BOKI/unity/Soliter/.utmp/RelWithDebInfo/v3x1a5k7/arm64-v8a/GameActivity/CMakeFiles/rebuild_cache.dir
