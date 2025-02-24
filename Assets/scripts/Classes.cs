@@ -24,37 +24,34 @@ public abstract class Move
 public class DealMove : Move
 {
     //List<int[]> fullSet = new List<int[]>();
-    List<int> num;
-    List<List<CardDummy>> fullSet = new List<List<CardDummy>>();
 
-    public DealMove(List<List<CardDummy>> fullSet, List<int> num)
+    Dictionary<int, List<CardDummy>> completedSequences = new Dictionary<int, List<CardDummy>>();
+
+    public DealMove(Dictionary<int, List<CardDummy>> completedSequences)
     {
-        this.fullSet = fullSet;
-        this.num = num;
+        this.completedSequences = completedSequences;
     }
     public override void Undo(GameManager manager)
     {
 
-        int i = 0;
-        foreach (int number in num)
+
+        foreach (KeyValuePair<int, List<CardDummy>> completedSequence in completedSequences)
         {
-            foreach (CardDummy dummy in fullSet[i++])
+            foreach (CardDummy dummy in completedSequence.Value)
             {
+                if (dummy.number == 1) continue; //skip last card if it was used to complete sequence
 
-
-                GameObject obj = GameObject.Instantiate(manager.cardPrefab);
-                Card card = obj.GetComponent<Card>();
-
-                CardDummy info = dummy;
-                card.Inicialize(info.number, info.symbol, number, manager.columns[number].cards.Count);
-                manager.columns[number].AddCards(new List<Card>() { card }, true, false);
-
-                card.ResetSize();
+                GameManager.instance.SpawnCard(dummy.number, dummy.symbol, completedSequence.Key, true);
             }
 
         }
         foreach (Colimn column in manager.columns.Reverse())
         {
+            if (completedSequences.ContainsKey(column.ID))
+            {//if the column had a completed sequence then we can just take the last card form that sequnce
+                manager.nonRandomCardsToDeal.Push(completedSequences[column.ID].Last());
+                continue;
+            }
             Card card = column.RemoveCards(column.cards.Count - 1)[0];
             CardDummy dummy = new CardDummy(card.number, card.sign);
             manager.nonRandomCardsToDeal.Push(dummy);
@@ -66,20 +63,20 @@ public class DealMove : Move
 public class CardMove : Move
 {
     int fromColumn, toColumn;
-    int fromIdex, toIndex;
+    int toIndex;
     List<CardDummy> fullSet = new List<CardDummy>();
 
-    bool revealed;
-    bool clearRevealed;
-    public CardMove(int fromColumn, int toColumn, int fromIdex, int toIndex, bool revealed, List<CardDummy> fullSet, bool clearRevealed = false)
+    bool moveReveal, clearReveal;
+    public CardMove(int fromColumn, int toColumn, int toIndex, bool moveReveal, List<CardDummy> fullSet, bool clearReveal)
     {
         this.fromColumn = fromColumn;
         this.toColumn = toColumn;
-        this.fromIdex = fromIdex;
         this.toIndex = toIndex;
-        this.revealed = revealed;
+        this.moveReveal = moveReveal;
+        this.clearReveal = clearReveal;
         this.fullSet = fullSet;
-        this.clearRevealed = clearRevealed;
+        Debug.Log("moveReveal: " + moveReveal + "  --  clearReveal: " + clearReveal);
+
     }
 
     public override void Undo(GameManager manager)
@@ -87,27 +84,26 @@ public class CardMove : Move
 
         if (fullSet != null)
         {
-            if (clearRevealed)
+            if (clearReveal)
             {
                 manager.columns[toColumn].cards.Last().SetVisible(false);
             }
-            List<Card> cardsToAdd = new List<Card>();
+
+            if (moveReveal)
+            {
+                manager.columns[fromColumn].cards.Last().SetVisible(false);
+            }
+
             foreach (CardDummy dummy in fullSet)
             {
-                Debug.Log(dummy.number);
-                GameObject obj = GameObject.Instantiate(manager.cardPrefab);
-                Card card = obj.GetComponent<Card>();
-
-                CardDummy info = dummy;
-                card.Inicialize(info.number, info.symbol, toColumn, manager.columns[toColumn].cards.Count);
-                manager.columns[toColumn].AddCards(new List<Card>() { card }, true, false);
-
-                card.ResetSize();
-                cardsToAdd.Add(card);
+                //place cards back in respective columns
+                int addToColumn = manager.columns[toColumn].cards.Count >= toIndex ? fromColumn : toColumn;
+                manager.SpawnCard(dummy.number, dummy.symbol, addToColumn, true);
             }
+            return;
         }
         List<Card> cards = manager.columns[toColumn].DragCards(toIndex, true);
-        if (revealed)
+        if (moveReveal)
         {
             manager.columns[fromColumn].cards.Last().SetVisible(false);
         }

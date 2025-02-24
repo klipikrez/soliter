@@ -17,7 +17,7 @@ public class Card : MonoBehaviour
 {
     public int number;
     public int sign;
-    public int column;
+    public int column { get; private set; }
     public int indexInColumn;
     public Image background;
     Sprite bg = null;
@@ -29,11 +29,12 @@ public class Card : MonoBehaviour
     public Sprite back;
     public Sprite front;
     public bool dragging = false;
+    Colimn primeParent = null;//when card gets to parent column set prime parent as parent
 
     Vector2 desiredPosition = Vector2.one;
     float distance;
     Vector2 previousPoint = Vector2.positiveInfinity;
-    public void Inicialize(int num, int sig, int column, int indexInColumn)
+    public void Inicialize(int num, int sig)
     {
         rect.localScale = Vector3.one;
         number = num;
@@ -64,21 +65,24 @@ public class Card : MonoBehaviour
                 {
                     bigSymbol.gameObject.SetActive(false);
                     numberGraphic.text = "J";
-                    background.sprite = bg = GameManager.instance.imageBg[0];
+                    background.sprite =
+                   bg = GameManager.instance.imageBg[0];
                     break;
                 }
             case 12:
                 {
                     bigSymbol.gameObject.SetActive(false);
                     numberGraphic.text = "Q";
-                    background.sprite = bg = GameManager.instance.imageBg[1];
+                    background.sprite =
+                   bg = GameManager.instance.imageBg[1];
                     break;
                 }
             case 13:
                 {
                     bigSymbol.gameObject.SetActive(false);
                     numberGraphic.text = "K";
-                    background.sprite = bg = GameManager.instance.imageBg[2];
+                    background.sprite =
+                    bg = GameManager.instance.imageBg[2];
                     break;
                 }
             default:
@@ -91,6 +95,12 @@ public class Card : MonoBehaviour
         rect.position = new Vector3(rect.position.x, rect.position.y, 0);
 
 
+    }
+
+    public void SetColumn(int column)
+    {
+        this.column = column;
+        this.indexInColumn = GameManager.instance.columns[column].cards.Count;
     }
 
     public void PrimeParent(Colimn t)
@@ -151,7 +161,7 @@ public class Card : MonoBehaviour
         }
     }
 
-    Colimn primeParent = null;
+
 
     private void Update()
     {

@@ -12,14 +12,14 @@ public class Colimn : MonoBehaviour
 
 
 
-    public List<CardDummy> AddCards(List<Card> cards, bool isVidible, ref bool reveal, bool check = true, bool primeParent = false)
+    public List<CardDummy> AddCards(List<Card> cards, bool isVidible, ref bool reveal, bool primeParent = false)
     {
 
         foreach (Card card in cards)
         {
             card.SetVisible(isVidible);
             this.cards.Add(card);
-            card.column = ID;
+            card.SetColumn(ID);
             card.indexInColumn = this.cards.Count - 1;
             if (primeParent)
                 card.PrimeParent(this);
@@ -28,39 +28,14 @@ public class Colimn : MonoBehaviour
             card.SetPosition(new Vector2(0, -GameManager.instance.spacing * (this.cards.Count - 1)));
 
         }
-        return check ? CheckPile(ref reveal) : null;
+        return CheckPile(ref reveal);
     }
 
 
-    public List<CardDummy> AddCards(List<Card> cards, bool isVidible, bool check = true, bool primeParent = false)
+    public List<CardDummy> AddCards(List<Card> cards, bool isVidible, bool primeParent = false)
     {
-
-        foreach (Card card in cards)
-        {
-            card.SetVisible(isVidible);
-            this.cards.Add(card);
-            card.column = ID;
-            card.indexInColumn = this.cards.Count - 1;
-
-            if (primeParent)
-                card.PrimeParent(this);
-            else
-                card.transform.SetParent(this.transform);
-            card.SetPosition(new Vector2(0, -GameManager.instance.spacing * (this.cards.Count - 1)));
-
-        }
-        return check ? CheckPile() : null;
-    }
-
-    private void Update()
-    {
-
-        /*int i = 0;
-        foreach (Card card in cards)
-        {
-
-            card.rect.anchoredPosition = new Vector3(card.rect.anchoredPosition.x, -GameManager.instance.spacing * i++, 0);
-        }*/
+        bool throwAway = true;
+        return AddCards(cards, isVidible, ref throwAway, primeParent);
     }
 
     public List<Card> DragCards(int indexInColumn, bool restrictedMovement = true)
@@ -102,37 +77,27 @@ public class Colimn : MonoBehaviour
 
     }
 
-    public List<Card> RemoveCards(int indexInColumn, ref bool reveal)
+    public List<Card> RemoveCards(int removeAfterIndex/*, ref bool reveal*/)
     {
         List<Card> cardsToRemove = new List<Card>();
-        while (indexInColumn < cards.Count)
+        while (removeAfterIndex < cards.Count)
         {
-            cardsToRemove.Add(cards[indexInColumn]);
-            Destroy(cards[indexInColumn].gameObject);
-            cards.RemoveAt(indexInColumn);
+            cardsToRemove.Add(cards[removeAfterIndex]);
+            Destroy(cards[removeAfterIndex].gameObject);
+            cards.RemoveAt(removeAfterIndex);
 
         }
         if (cards.Count == 0) return cardsToRemove;
-        reveal = (cards.Last().numberGraphic.enabled);
+        //reveal = (cards.Last().numberGraphic.enabled);
         cards.Last().SetVisible(true);
         return cardsToRemove;
     }
-
-    public List<Card> RemoveCards(int indexInColumn)
-    {
-        Debug.Log("aaaa");
-        List<Card> cardsToRemove = new List<Card>();
-        while (indexInColumn < cards.Count)
+    /*
+        public List<Card> RemoveCards(int indexInColumn)
         {
-            cardsToRemove.Add(cards[indexInColumn]);
-            Destroy(cards[indexInColumn].gameObject);
-            cards.RemoveAt(indexInColumn);
-
-        }
-        if (cards.Count > 0)
-            cards.Last().SetVisible(true);
-        return cardsToRemove;
-    }
+            bool throwAway = false;
+            return RemoveCards(indexInColumn, ref throwAway);
+        }*/
     public List<CardDummy> CheckPile(ref bool revealed)
     {
 
@@ -142,7 +107,7 @@ public class Colimn : MonoBehaviour
         for (int i = 0; i < cards.Count; i++)
         {
             if (!cards[i].symbol.enabled) continue;
-            else if (cards[i].number == 13) removeAfterIndex = i;
+            else if (cards[i].number == 13) { removeAfterIndex = i; check = 13; }
 
             if (cards.Count - i < check)
             {//break if no chance to pile
@@ -151,8 +116,6 @@ public class Colimn : MonoBehaviour
 
             if (cards[i].number != check)
             {
-                check = 13;
-                removeAfterIndex = i;
                 cardsFullDummy.Clear();
                 continue;
             }
@@ -161,7 +124,9 @@ public class Colimn : MonoBehaviour
             if (check == 1)
             {
                 bool reveal = false;
-                RemoveCards(removeAfterIndex, ref reveal);
+                if (removeAfterIndex >= 0)
+                    reveal = cards[removeAfterIndex].numberGraphic.enabled;
+                RemoveCards(removeAfterIndex);
                 revealed = reveal;
                 GameManager.instance.CheckWin();
                 return cardsFullDummy;
@@ -182,47 +147,4 @@ public class Colimn : MonoBehaviour
             cards[i].transform.SetSiblingIndex(i);
         }
     }
-
-    public List<CardDummy> CheckPile()
-    {
-
-        List<CardDummy> cardsFullDummy = new List<CardDummy>();
-        int removeAfterIndex = 52;
-        int check = 13;
-        for (int i = 0; i < cards.Count; i++)
-        {
-            if (!cards[i].symbol.enabled) continue;
-            else if (cards[i].number == 13) removeAfterIndex = i;
-
-            if (cards.Count - i < check)
-            {//break if no chance to pile
-                return null;
-            }
-
-            if (cards[i].number != check)
-            {
-                check = 13;
-                removeAfterIndex = i;
-                cardsFullDummy.Clear();
-                continue;
-            }
-            cardsFullDummy.Add(new CardDummy(cards[i].number, cards[i].sign));
-
-            if (check == 1)
-            {
-
-                RemoveCards(removeAfterIndex);
-                GameManager.instance.CheckWin();
-                return cardsFullDummy;
-            }
-
-
-            check--;
-
-
-        }
-        return null;
-    }
-
-
 }

@@ -63,18 +63,11 @@ public class GameManager : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-
-
-
-
-
-
-
         for (int i = 0; i < columns.Length; i++)
         {
             columns[i].ID = i;
         }
-        RandomGenerate();
+        GenerateRandomBoard();
     }
 
     public void Restart()
@@ -89,7 +82,7 @@ public class GameManager : MonoBehaviour
         {
             col.RemoveCards(0);
         }
-        RandomGenerate();
+        GenerateRandomBoard();
         ResetDeckGraphic();
     }
     private float Timer;
@@ -107,8 +100,6 @@ public class GameManager : MonoBehaviour
             int i = 0;
             foreach (Card card in moveCards)
             {
-                //card.rect.position = new Vector3(0, -GameManager.instance.spacing * i++, 0) + Input.mousePosition;
-                //DAJS
                 Vector2 localPosition;
                 RectTransformUtility.ScreenPointToLocalPointInRectangle(
                     (RectTransform)canvas.transform,
@@ -117,7 +108,6 @@ public class GameManager : MonoBehaviour
                     out localPosition
                 );
 
-                //Vector2 offest = /*Camera.main.ScreenToWorldPoint(*/new Vector2(mousePos.x, mousePos.y)/*)*/;
                 card.SetPosition(new Vector2(0, -GameManager.instance.spacing * i++) + localPosition);
                 card.SetSpeed((moveCards.Count - i) / 2f + 1);
             }
@@ -151,7 +141,7 @@ public class GameManager : MonoBehaviour
         return (columns[0].transform.position.x - columns[1].transform.position.x) * posmultiply;
     }
 
-    public void RandomGenerate()
+    public void GenerateRandomBoard()
     {
         moveStack.Clear();
         nonRandomCardsToDeal.Clear();
@@ -169,31 +159,47 @@ public class GameManager : MonoBehaviour
             }
         }
 
-        int num = 0;
+        int spawnInColumnIndex = 0;
         int count = 0;
-        while (count < (!debug ? 54 : 14))
+        while (count < (!debug ? 54 : 26))
         {
-            if (num >= 10) num = 0;
+            if (spawnInColumnIndex >= 10) spawnInColumnIndex = 0;
 
 
-            GameObject obj = Instantiate(cardPrefab);
-            Card card = obj.GetComponent<Card>();
+            SpawnRandomCard(spawnInColumnIndex, count > (!debug ? 43 : 15) ? true : false);
 
-            CardDummy info = GetRandomCard();
-            card.Inicialize(info.number, info.symbol, num, columns[num].cards.Count);
-
-            columns[num++].AddCards(new List<Card>() { card }, count > 43 ? true : !debug ? false : true);
+            spawnInColumnIndex++;
             count++;
-            card.ResetSize();
-            card.SetPositionImeniate(SpawnCardsHere.transform.position);
+
         }
 
 
     }
 
+    public List<CardDummy> SpawnRandomCard(int column, bool visible)
+    {
+        CardDummy info = GetRandomCard();
+        if (info == null) return null;
+        return SpawnCard(info.number, info.symbol, column, visible);
+    }
+
+    public List<CardDummy> SpawnCard(int number, int symbol, int column, bool visible)
+    {
+        GameObject obj = Instantiate(cardPrefab);
+        Card card = obj.GetComponent<Card>();
+
+        card.Inicialize(number, symbol);
+
+        List<CardDummy> completedSequence = columns[column].AddCards(new List<Card>() { card }, visible ? true : false);
+        card.ResetSize();
+        card.SetPositionImeniate(SpawnCardsHere.transform.position);
+        return completedSequence;
+    }
+
     CardDummy GetRandomCard()
     {
-        CardDummy card;
+        CardDummy card = null;
+        if (playingCardsIndex.Count + nonRandomCardsToDeal.Count == 0) return null; //no cards?? error
         if (nonRandomCardsToDeal.Count == 0)
         {
             int index = !debug ? UnityEngine.Random.Range(0, playingCardsIndex.Count) : playingCardsIndex.Count - 1;
@@ -218,39 +224,28 @@ public class GameManager : MonoBehaviour
     public void DealCards(int number)
     {
         if (moveCards.Count() != 0) return;
-        if (playingCardsIndex.Count + nonRandomCardsToDeal.Count < number) return;
+        if (playingCardsIndex.Count + nonRandomCardsToDeal.Count == 0) return;
 
-
-
-        int num = 0;
+        Dictionary<int, List<CardDummy>> completedSequences = new Dictionary<int, List<CardDummy>>();
+        int spawnInColumnIndex = 0;
         int count = 0;
-        List<List<CardDummy>> stack = new List<List<CardDummy>>();
-        List<int> columnsFull = new List<int>();
+
         while (count < number)
         {
-            if (num >= 10) num = 0;
+            if (spawnInColumnIndex >= 10) spawnInColumnIndex = 0;
 
+            List<CardDummy> completedSequence = SpawnRandomCard(spawnInColumnIndex, true);
 
-            GameObject obj = Instantiate(cardPrefab);
-            Card card = obj.GetComponent<Card>();
-
-            CardDummy info = GetRandomCard();
-            card.Inicialize(info.number, info.symbol, num, columns[num].cards.Count);
-
-            List<CardDummy> full = columns[num].AddCards(new List<Card>() { card }, true);
-
-            if (full != null)
+            if (completedSequence != null)
             {
-                columnsFull.Add(num);
-
-                stack.Add(full);
+                completedSequences.Add(spawnInColumnIndex, completedSequence);
             }
+
             count++;
-            num++;
-            card.ResetSize();
-            card.SetPositionImeniate(SpawnCardsHere.transform.position);
+            spawnInColumnIndex++;
+
         }
-        moveStack.Push(new DealMove(stack, columnsFull));
+        moveStack.Push(new DealMove(completedSequences));
 
         UpdateDeckGraphic();
     }
@@ -271,7 +266,7 @@ public class GameManager : MonoBehaviour
 
     public void UpdateDeckGraphic()
     {
-
+        if (debug) return;
         int num = (playingCardsIndex.Count + nonRandomCardsToDeal.Count) / 10;
 
         DecksLeft.text = (num).ToString();
@@ -318,13 +313,18 @@ public class GameManager : MonoBehaviour
 
         Colimn closestColumn = null;
         float cloasestDistance = float.MaxValue;
+
         foreach (Colimn col in columns)
         {
+            if (col == columns[moveCards.Last().column]) { Debug.Log(col.ID + " skip root column"); continue; }
+            Vector3 v3 = mousePos;
+            v3.z = 5.0f;
+            v3 = Camera.main.ScreenToWorldPoint(v3);
+            v3.z = 0f;
 
-            //float yDist = Math.Abs(moveCards[0].transform.position.y - col.cards.Last().transform.position.y);
-            Vector3 vec1 = new Vector3(moveCards[0].transform.position.x, moveCards[0].transform.position.y / 2, moveCards[0].transform.position.z);
-            Vector3 vec2 = Vector3.one;
-            if (col.cards.Count == 0)
+            Vector3 vec1 = new Vector3(v3.x, v3.y / 2, 0);  //mouse position vector
+            Vector3 vec2 = Vector3.one;                     //column top card position vector
+            if (col.cards.Count == 0)//if no cards, take root position
             {
                 vec2 = new Vector3(col.top.position.x, col.top.position.y / 2, 0);
             }
@@ -345,9 +345,9 @@ public class GameManager : MonoBehaviour
 
         if (closestColumn.cards.Count != 0 && closestColumn.cards.Last().number != moveCards.First().number + 1) { Debug.Log("notSame"); StopDragging(); return; }
 
-        bool revealed = false;
+        bool moveReveal = false;
         if (columns[moveCards.Last().column].cards.Count > 0)
-            revealed = columns[moveCards.Last().column].cards.Last().SetVisible(true);
+            moveReveal = columns[moveCards.Last().column].cards.Last().SetVisible(true);
 
         int homeColNumber = moveCards.First().column;
         int index = moveCards.First().indexInColumn;
@@ -355,8 +355,8 @@ public class GameManager : MonoBehaviour
 
 
         bool clearReveal = false;
-        List<CardDummy> stck = closestColumn.AddCards(moveCards, true, ref clearReveal, true, false);
-        moveStack.Push(new CardMove(homeColNumber, closestColumn.ID, index, to, revealed, stck, clearReveal));
+        List<CardDummy> completedSequence = closestColumn.AddCards(moveCards, true, ref clearReveal, false);
+        moveStack.Push(new CardMove(homeColNumber, closestColumn.ID, to, moveReveal, completedSequence, clearReveal));
         StopDragging(false);
         Debug.Log("Good");
     }
@@ -365,7 +365,6 @@ public class GameManager : MonoBehaviour
     {
         if (moveCards == null || moveCards.Count == 0 || moveCards[0] == null) return;
         if (columnRect == null) { columnRect = columns[0].GetComponent<RectTransform>(); }
-        float maxPlaceDistance = columnRect.sizeDelta.x * 0.5f;
 
         Colimn bestColumn = null;
         float columnScore = float.MinValue;
@@ -375,8 +374,8 @@ public class GameManager : MonoBehaviour
             if (col.cards.Count() != 0 && col.cards.Last().number != moveCards.First().number + 1) { Debug.Log(col.ID + " Column not empty and Card can be placed here"); continue; }
             if (moveCards.Last().number == 13)
             {
-                if (col.cards.Count() == 0) { columnScore = 0; bestColumn = col; Debug.Log(col.ID + " K and empty"); break; }
-                else { Debug.Log(col.ID + " K and not empty"); continue; }
+                if (col.cards.Count() == 0) { columnScore = 0; bestColumn = col; Debug.Log(col.ID + " King and empty"); break; }
+                else { Debug.Log(col.ID + " King and not empty"); continue; }
             }
             if (col.cards.Count() == 0) if (columnScore < 0) { columnScore = 0; bestColumn = col; Debug.Log(col.ID + " ZERO and free"); continue; } else continue;
             float localScore = 100;
@@ -407,7 +406,6 @@ public class GameManager : MonoBehaviour
             revealed = columns[moveCards.Last().column].cards.Last().SetVisible(true);
 
         int homeColNumber = moveCards.First().column;
-        int index = moveCards.First().indexInColumn;
         int to = bestColumn.cards.Count;
         int j = 0;
         foreach (Card card in moveCards)
@@ -416,10 +414,8 @@ public class GameManager : MonoBehaviour
         }
 
         bool clearReveal = false;
-        List<CardDummy> stck = bestColumn.AddCards(moveCards, true, ref clearReveal, true, true);
-        moveStack.Push(new CardMove(homeColNumber, bestColumn.ID, index, to, revealed, stck, clearReveal));
-
-
+        List<CardDummy> completedSequence = bestColumn.AddCards(moveCards, true, ref clearReveal, true);
+        moveStack.Push(new CardMove(homeColNumber, bestColumn.ID, to, revealed, completedSequence, clearReveal));
 
         StopDragging(false);
     }
