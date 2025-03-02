@@ -14,6 +14,7 @@ public class GameManager : MonoBehaviour
 {
     public GameObject cardPrefab;
     public Canvas canvas;
+    public RectTransform canvasRect;
     public Sprite[] symbols;
     public Sprite[] imageBg;
     public Color[] SymbolColors;
@@ -26,14 +27,13 @@ public class GameManager : MonoBehaviour
     [SerializeField]
     public Stack<CardDummy> nonRandomCardsToDeal = new Stack<CardDummy>() { };
     public GameObject moveObj;
-    public int seed = 52;
     public static GameManager instance;
     public Stack<Move> moveStack = new Stack<Move>();
     public RectTransform SpawnCardsHere;
     public PlayerInput input;
     InputAction touch;
-    public TMP_Text fps;
-    public TMP_Text DecksLeft;
+    public TMP_Text[] timer;
+    public TMP_Text[] DecksLeft;
     public List<Transform> DeckCardGraphics = new List<Transform>();
     Vector2 mousePos = Vector2.zero;
     public GameObject[] WinActiate;
@@ -47,7 +47,7 @@ public class GameManager : MonoBehaviour
         Application.targetFrameRate = 60;
         instance = this;
         touch = input.actions["Point"];
-
+        canvasRect = canvasRect.GetComponent<RectTransform>();
 
     }
 
@@ -72,7 +72,7 @@ public class GameManager : MonoBehaviour
 
     public void Restart()
     {
-        if (moveCards.Count() != 0) return;
+        if (moveCards.Count != 0) return;
         Timer = 0;
         foreach (GameObject obj in WinActiate)
         {
@@ -83,7 +83,7 @@ public class GameManager : MonoBehaviour
             col.RemoveCards(0);
         }
         GenerateRandomBoard();
-        ResetDeckGraphic();
+        ResetDeckGraphics();
     }
     private float Timer;
     public void Update()
@@ -93,7 +93,8 @@ public class GameManager : MonoBehaviour
         int minutes = Mathf.FloorToInt(Timer / 60F);
         int seconds = Mathf.FloorToInt(Timer % 60F);
 
-        fps.text = minutes.ToString("00") + ":" + seconds.ToString("00");
+        timer[0].text = minutes.ToString("00") + ":" + seconds.ToString("00");
+        timer[1].text = minutes.ToString("00") + ":" + seconds.ToString("00");
 
         if (moveCards.Count > 0)
         {
@@ -135,10 +136,6 @@ public class GameManager : MonoBehaviour
             c.background.raycastTarget = false;
             c.dragging = true;
         }
-    }
-    public float GetDistanceBetweenCards()
-    {
-        return (columns[0].transform.position.x - columns[1].transform.position.x) * posmultiply;
     }
 
     public void GenerateRandomBoard()
@@ -214,7 +211,7 @@ public class GameManager : MonoBehaviour
 
     public void UndoMove()
     {
-        if (moveCards.Count() != 0) return;
+        if (moveCards.Count != 0) return;
         if (moveStack.Count == 0) return;
         Move move = moveStack.Pop();
 
@@ -223,7 +220,7 @@ public class GameManager : MonoBehaviour
 
     public void DealCards(int number)
     {
-        if (moveCards.Count() != 0) return;
+        if (moveCards.Count != 0) return;
         if (playingCardsIndex.Count + nonRandomCardsToDeal.Count == 0) return;
 
         Dictionary<int, List<CardDummy>> completedSequences = new Dictionary<int, List<CardDummy>>();
@@ -247,7 +244,7 @@ public class GameManager : MonoBehaviour
         }
         moveStack.Push(new DealMove(completedSequences));
 
-        UpdateDeckGraphic();
+        UpdateDeckGraphics();
     }
 
     public void CheckWin()
@@ -264,42 +261,54 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    public void UpdateDeckGraphic()
+    public void UpdateDeckGraphics()
+    {
+        UpdateDeckGraphic(0);
+        UpdateDeckGraphic(1);
+    }
+
+    public void UpdateDeckGraphic(int index)
     {
         if (debug) return;
         int num = (playingCardsIndex.Count + nonRandomCardsToDeal.Count) / 10;
 
-        DecksLeft.text = (num).ToString();
+        DecksLeft[index].text = (num).ToString();
         if (num != 0)
         {
-            DecksLeft.transform.SetParent(DeckCardGraphics[num - 1], false);
+            DecksLeft[index].transform.SetParent(DeckCardGraphics[num - 1 + index * 5], false);
         }
         else
         {
-            DecksLeft.transform.SetParent(DeckCardGraphics[0].parent, false);
+            DecksLeft[index].transform.SetParent(DeckCardGraphics[0 + index * 5].parent, false);
         }
 
 
 
-        if (num != 5) DeckCardGraphics[num].gameObject.SetActive(false);
-        if (num != 0) DeckCardGraphics[num - 1].gameObject.SetActive(true);
+        if (num != 5) DeckCardGraphics[num + index * 5].gameObject.SetActive(false);
+        if (num != 0) DeckCardGraphics[num - 1 + index * 5].gameObject.SetActive(true);
 
-        DecksLeft.rectTransform.anchoredPosition *= new Vector2(0, 1);
+        DecksLeft[index].rectTransform.anchoredPosition *= new Vector2(0, 1);
 
     }
 
-    public void ResetDeckGraphic()
+    public void ResetDeckGraphics()
     {
-        DecksLeft.text = (5).ToString();
+        ResetDeckGraphic(0);
+        ResetDeckGraphic(1);
+    }
 
-        DecksLeft.transform.SetParent(DeckCardGraphics[4], false);
+    public void ResetDeckGraphic(int index)
+    {
+        DecksLeft[index].text = (5).ToString();
+
+        DecksLeft[index].transform.SetParent(DeckCardGraphics[4 + index * 5], false);
 
         foreach (Transform graphic in DeckCardGraphics)
         {
             graphic.gameObject.SetActive(true);
         }
 
-        DecksLeft.rectTransform.anchoredPosition *= new Vector2(0, 1);
+        DecksLeft[index].rectTransform.anchoredPosition *= new Vector2(0, 1);
 
     }
 
@@ -316,7 +325,7 @@ public class GameManager : MonoBehaviour
 
         foreach (Colimn col in columns)
         {
-            if (col == columns[moveCards.Last().column]) { Debug.Log(col.ID + " skip root column"); continue; }
+            if (col == columns[moveCards.Last().column]) { /*Debug.Log(col.ID + " skip root column");*/ continue; }
             Vector3 v3 = mousePos;
             v3.z = 5.0f;
             v3 = Camera.main.ScreenToWorldPoint(v3);
@@ -341,16 +350,16 @@ public class GameManager : MonoBehaviour
                 closestColumn = col;
             }
         }
-        if (closestColumn == null || closestColumn == columns[moveCards.Last().column]) { Debug.Log("NoColumn"); StopDragging(); return; }
+        if (closestColumn == null || closestColumn == columns[moveCards.Last().column]) { /*Debug.Log("NoColumn");*/ StopDragging(); return; }
 
-        if (closestColumn.cards.Count != 0 && closestColumn.cards.Last().number != moveCards.First().number + 1) { Debug.Log("notSame"); StopDragging(); return; }
+        if (closestColumn.cards.Count != 0 && closestColumn.cards.Last().number != moveCards[0].number + 1) { /*Debug.Log("notSame");*/ StopDragging(); return; }
 
         bool moveReveal = false;
         if (columns[moveCards.Last().column].cards.Count > 0)
             moveReveal = columns[moveCards.Last().column].cards.Last().SetVisible(true);
 
-        int homeColNumber = moveCards.First().column;
-        int index = moveCards.First().indexInColumn;
+        int homeColNumber = moveCards[0].column;
+        int index = moveCards[0].indexInColumn;
         int to = closestColumn.cards.Count;
 
 
@@ -358,7 +367,7 @@ public class GameManager : MonoBehaviour
         List<CardDummy> completedSequence = closestColumn.AddCards(moveCards, true, ref clearReveal, false);
         moveStack.Push(new CardMove(homeColNumber, closestColumn.ID, to, moveReveal, completedSequence, clearReveal));
         StopDragging(false);
-        Debug.Log("Good");
+        //Debug.Log("Good");
     }
 
     public void OptimalPlace()
@@ -370,19 +379,19 @@ public class GameManager : MonoBehaviour
         float columnScore = float.MinValue;
         foreach (Colimn col in columns)
         {
-            if (col == columns[moveCards.Last().column]) { Debug.Log(col.ID + " skip root column"); continue; }
-            if (col.cards.Count() != 0 && col.cards.Last().number != moveCards.First().number + 1) { Debug.Log(col.ID + " Column not empty and Card can be placed here"); continue; }
+            if (col == columns[moveCards.Last().column]) { /*Debug.Log(col.ID + " skip root column");*/ continue; }
+            if (col.cards.Count != 0 && col.cards.Last().number != moveCards[0].number + 1) { /*Debug.Log(col.ID + " Column not empty and Card can be placed here");*/ continue; }
             if (moveCards.Last().number == 13)
             {
-                if (col.cards.Count() == 0) { columnScore = 0; bestColumn = col; Debug.Log(col.ID + " King and empty"); break; }
-                else { Debug.Log(col.ID + " King and not empty"); continue; }
+                if (col.cards.Count == 0) { columnScore = 0; bestColumn = col; /*Debug.Log(col.ID + " King and empty");*/ break; }
+                else { /*Debug.Log(col.ID + " King and not empty");*/ continue; }
             }
-            if (col.cards.Count() == 0) if (columnScore < 0) { columnScore = 0; bestColumn = col; Debug.Log(col.ID + " ZERO and free"); continue; } else continue;
+            if (col.cards.Count == 0) if (columnScore < 0) { columnScore = 0; bestColumn = col; /*Debug.Log(col.ID + " ZERO and free");*/ continue; } else continue;
             float localScore = 100;
 
             localScore += math.abs(moveCards.Last().column - col.ID) * 5;
 
-            int i = col.cards.Count() - 2;
+            int i = col.cards.Count - 2;
             int number = col.cards.Last().number;
             while (i >= 0 && (col.cards[i].number - 1) == number)
             {
@@ -391,7 +400,7 @@ public class GameManager : MonoBehaviour
                 i--;
             }
 
-            Debug.Log(col.ID + " Score " + localScore);
+            //Debug.Log(col.ID + " Score " + localScore);
             if (localScore > columnScore)
             {
                 bestColumn = col;
@@ -399,13 +408,13 @@ public class GameManager : MonoBehaviour
             }
 
         }
-        if (bestColumn == null) { Debug.Log("Now not able to place"); StopDragging(); return; }
-        Debug.Log(bestColumn.ID + " FINAL SCORE " + columnScore);
+        if (bestColumn == null) { /*Debug.Log("Now not able to place");*/ StopDragging(); return; }
+        //Debug.Log(bestColumn.ID + " FINAL SCORE " + columnScore);
         bool revealed = false;
         if (columns[moveCards.Last().column].cards.Count > 0)
             revealed = columns[moveCards.Last().column].cards.Last().SetVisible(true);
 
-        int homeColNumber = moveCards.First().column;
+        int homeColNumber = moveCards[0].column;
         int to = bestColumn.cards.Count;
         int j = 0;
         foreach (Card card in moveCards)

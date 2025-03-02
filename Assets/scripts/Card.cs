@@ -19,6 +19,7 @@ public class Card : MonoBehaviour
     public int sign;
     public int column { get; private set; }
     public int indexInColumn;
+    public GameObject tint;
     public Image background;
     Sprite bg = null;
     public Image symbol;
@@ -34,6 +35,7 @@ public class Card : MonoBehaviour
     Vector2 desiredPosition = Vector2.one;
     float distance;
     Vector2 previousPoint = Vector2.positiveInfinity;
+    public float spacing = 52;
     public void Inicialize(int num, int sig)
     {
         rect.localScale = Vector3.one;
@@ -125,12 +127,23 @@ public class Card : MonoBehaviour
         return true;
     }
 
+    public bool IsVisible()
+    {
+        return symbol.enabled;
+    }
+
+    public void SetDarken(bool val)
+    {
+        if (val == tint.activeSelf) return;
+        tint.SetActive(val);
+    }
+
     public void OnPointerDown(PointerEventData eventData)
     {
 
 
         if (GameManager.instance.moveCards.Count != 0) return;
-        if (symbol.enabled == false) return;
+        if (this.IsVisible() == false) return;
         List<Card> crds = GameManager.instance.columns[column].DragCards(indexInColumn);
         if (crds == null) return;
         previousPoint = eventData.position;
@@ -171,7 +184,7 @@ public class Card : MonoBehaviour
         if (primeParent != null)
         {
 
-            Vector2 newPos = new Vector2(primeParent.top.position.x, primeParent.top.position.y) + (-desiredPosition / GameManager.instance.spacing) * GameManager.instance.GetDistanceBetweenCards();
+            Vector2 newPos = new Vector2(primeParent.top.position.x, primeParent.top.position.y) + (new Vector2(desiredPosition.x, desiredPosition.y * (ScreenOrientation.instance.isVertical ? 1 : 0.85f)) / GameManager.instance.canvasRect.rect.height) * GameManager.instance.posmultiply;
             //Debug.Log(Vector2.Distance(newPos, rect.position));
 
 
@@ -185,7 +198,8 @@ public class Card : MonoBehaviour
             rect.position = Vector2.Lerp(rect.position, newPos, Time.deltaTime * 10 * speedMultiply);
             return;
         }
-        rect.anchoredPosition = Vector2.Lerp(rect.anchoredPosition, desiredPosition, Time.deltaTime * 10 * speedMultiply);
+
+        rect.anchoredPosition = Vector2.Lerp(rect.anchoredPosition, new Vector2(desiredPosition.x, desiredPosition.y * (ScreenOrientation.instance.isVertical ? 1 : 0.85f)), Time.deltaTime * 10 * speedMultiply);
 
     }
 
@@ -193,10 +207,15 @@ public class Card : MonoBehaviour
     float speedMultiply = 1;
     public void SetPosition(Vector2 pos)
     {
-
         desiredPosition = pos;
+        transform.position = new Vector3(transform.position.x, transform.position.y, 5);
     }
 
+    /*public void SetSpacing(float spacing)
+    {
+        this.spacing = spacing;
+        desiredPosition = new Vector2(0, -spacing + (-GameManager.instance.columns[column].GetCardDistanceFromRoot(indexInColumn)));
+    }*/
     public void SetSpeed(float speedMultiply)
     {
         this.speedMultiply = speedMultiply;
@@ -205,7 +224,7 @@ public class Card : MonoBehaviour
     public void SetPositionImeniate(Vector2 pos)
     {
         rect.position = pos;
-
+        transform.position = new Vector3(transform.position.x, transform.position.y, 5);
     }
 
     public void OnPointerUp(PointerEventData eventData)
@@ -213,11 +232,9 @@ public class Card : MonoBehaviour
         if (!dragging) return;
         if (distance < 10f)
         {
-            Debug.Log("Optim");
             GameManager.instance.OptimalPlace();
             return;
         }
-        Debug.Log("Norma");
         GameManager.instance.CheckClosestToPlace();
         previousPoint = Vector2.positiveInfinity;
         distance = 0;

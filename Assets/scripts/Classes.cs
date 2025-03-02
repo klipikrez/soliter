@@ -56,7 +56,7 @@ public class DealMove : Move
             CardDummy dummy = new CardDummy(card.number, card.sign);
             manager.nonRandomCardsToDeal.Push(dummy);
         }
-        manager.UpdateDeckGraphic();
+        manager.UpdateDeckGraphics();
     }
 }
 
@@ -75,8 +75,6 @@ public class CardMove : Move
         this.moveReveal = moveReveal;
         this.clearReveal = clearReveal;
         this.fullSet = fullSet;
-        Debug.Log("moveReveal: " + moveReveal + "  --  clearReveal: " + clearReveal);
-
     }
 
     public override void Undo(GameManager manager)
@@ -102,7 +100,7 @@ public class CardMove : Move
             }
             return;
         }
-        List<Card> cards = manager.columns[toColumn].DragCards(toIndex, true);
+        List<Card> cards = manager.columns[toColumn].DragCards(toIndex);
         if (moveReveal)
         {
             manager.columns[fromColumn].cards.Last().SetVisible(false);
