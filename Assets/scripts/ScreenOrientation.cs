@@ -7,6 +7,7 @@ public class ScreenOrientation : MonoBehaviour
     public RectTransform uiVertical;
     public RectTransform uiHorizontal;
     public RectTransform columnContainer;
+    public RectTransform BackgroundGraphic;
     public bool isVertical = true;
     public static ScreenOrientation instance;
     public static event Action OnRotateScreen;
@@ -19,7 +20,7 @@ public class ScreenOrientation : MonoBehaviour
     void Start()
     {
 
-        CheckOrientation(true);
+        CheckOrientation();
 
 
     }
@@ -29,20 +30,20 @@ public class ScreenOrientation : MonoBehaviour
         CheckOrientation();
     }
 
-    void CheckOrientation(bool forceUpdate = false)
+    void CheckOrientation()
     {
         // Debug.Log((float)Screen.height / Screen.width);
         if ((float)Screen.height / Screen.width > 1.1f)
         {
-            SetVertical(forceUpdate);
+            SetVertical();
         }
         else
         {
-            SetHorizontal(forceUpdate);
+            SetHorizontal();
         }
     }
 
-    void SetVertical(bool forceUpdate = false)
+    void SetVertical()
     {
         if (isVertical) return;
 
@@ -57,7 +58,7 @@ public class ScreenOrientation : MonoBehaviour
         OnRotateScreen.Invoke();
     }
 
-    void SetHorizontal(bool forceUpdate = false)
+    void SetHorizontal()
     {
         if (!isVertical) return;
 
@@ -65,7 +66,7 @@ public class ScreenOrientation : MonoBehaviour
         uiHorizontal.gameObject.SetActive(true);
 
         SetColumnContainerDistanceFromTop(0);
-        SetColumnContainerDistanceFromRight(-200f);
+        SetColumnContainerDistanceFromRight(-320f);
         //Debug.Log("horizontal");
         isVertical = false;
         Canvas.ForceUpdateCanvases();
@@ -76,12 +77,18 @@ public class ScreenOrientation : MonoBehaviour
     {
         columnContainer.sizeDelta = new Vector2(columnContainer.sizeDelta.x, distance);
         columnContainer.anchoredPosition = new Vector2(columnContainer.anchoredPosition.x, distance / 2);
+
+        BackgroundGraphic.sizeDelta = new Vector2(BackgroundGraphic.sizeDelta.x, distance);
+        BackgroundGraphic.anchoredPosition = new Vector2(BackgroundGraphic.anchoredPosition.x, distance / 2);
     }
 
     void SetColumnContainerDistanceFromRight(float distance)
     {
         columnContainer.sizeDelta = new Vector2(distance, columnContainer.sizeDelta.y);
         columnContainer.anchoredPosition = new Vector2(distance / 2, columnContainer.anchoredPosition.y);
+
+        BackgroundGraphic.sizeDelta = new Vector2(distance, BackgroundGraphic.sizeDelta.y);
+        BackgroundGraphic.anchoredPosition = new Vector2(distance / 2, BackgroundGraphic.anchoredPosition.y);
     }
 
 }

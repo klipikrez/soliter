@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using TMPro;
@@ -39,7 +40,12 @@ public class GameManager : MonoBehaviour
     public GameObject[] WinActiate;
     public TMP_Text[] timeUi;
     public float posmultiply = 100;
+    public GameObject outOfCardsGraphic;
+    public Coroutine flashCardCoroutine;
+    public Coroutine flashDealCoroutine;
     public bool debug = false;
+    List<Card> flashFrom = new List<Card>();
+    List<Card> flashTo = new List<Card>();
 
     private void Awake()
     {
@@ -245,6 +251,7 @@ public class GameManager : MonoBehaviour
         moveStack.Push(new DealMove(completedSequences));
 
         UpdateDeckGraphics();
+        AudioManager.Play("deal", 0.25f);
     }
 
     public void CheckWin()
@@ -266,6 +273,7 @@ public class GameManager : MonoBehaviour
         UpdateDeckGraphic(0);
         UpdateDeckGraphic(1);
     }
+
 
     public void UpdateDeckGraphic(int index)
     {
@@ -289,6 +297,52 @@ public class GameManager : MonoBehaviour
 
         DecksLeft[index].rectTransform.anchoredPosition *= new Vector2(0, 1);
 
+    }
+
+
+    public void FlashDeckGraphic()
+    {
+        if (debug) return;
+
+        AudioManager.Play("noMove", 0.25f);
+
+        int numberOfActiveCards = 0;
+        foreach (RectTransform card in DeckCardGraphics)
+        {
+            if (card.gameObject.activeSelf) numberOfActiveCards++;
+        }
+
+        if (numberOfActiveCards == 0) { outOfCardsGraphic.SetActive(true); return; }
+        if (flashDealCoroutine != null)
+        {
+            StopCoroutine(flashDealCoroutine);
+            flashDealCoroutine = null;
+        }
+        flashDealCoroutine = StartCoroutine(FlashDealCards());
+    }
+
+    IEnumerator FlashDealCards()
+    {
+        float timer = 0;
+        while (timer <= 1)
+        {
+            timer += 0.2f;
+            yield return new WaitForSeconds(0.1f);
+            foreach (RectTransform card in DeckCardGraphics)
+            {
+                if (card == null) yield break;
+                card.gameObject.GetComponent<UnityEngine.UI.Image>().color = new Color(0.7f, 1f, 0.7f);
+            }
+
+
+            yield return new WaitForSeconds(0.1f);
+            foreach (RectTransform card in DeckCardGraphics)
+            {
+                if (card == null) yield break;
+                card.gameObject.GetComponent<UnityEngine.UI.Image>().color = Color.white;
+            }
+
+        }
     }
 
     public void ResetDeckGraphics()
@@ -317,7 +371,7 @@ public class GameManager : MonoBehaviour
     public void CheckClosestToPlace()
     {
         if (moveCards == null || moveCards.Count == 0 || moveCards[0] == null) return;
-        if (columnRect == null) { columnRect = columns[0].GetComponent<RectTransform>(); }
+        if (columnRect == null) { columnRect = (RectTransform)columns[0].transform; }
         float maxPlaceDistance = columnRect.sizeDelta.x * 0.5f;
 
         Colimn closestColumn = null;
@@ -334,14 +388,10 @@ public class GameManager : MonoBehaviour
             Vector3 vec1 = new Vector3(v3.x, v3.y / 2, 0);  //mouse position vector
             Vector3 vec2 = Vector3.one;                     //column top card position vector
             if (col.cards.Count == 0)//if no cards, take root position
-            {
                 vec2 = new Vector3(col.top.position.x, col.top.position.y / 2, 0);
-            }
             else
-            {
-                vec2 = new Vector3(col.cards.Last().transform.position.x, col.cards.Last().transform.position.y / 2, col.cards.Last().transform.position.z);
+                vec2 = new Vector3(col.cards.Last().transform.position.x, col.cards.Last().transform.position.y / 2, 0);
 
-            }
             float dist = Vector3.Distance(vec1, vec2);
 
             if (dist < maxPlaceDistance && dist < cloasestDistance)
@@ -367,6 +417,7 @@ public class GameManager : MonoBehaviour
         List<CardDummy> completedSequence = closestColumn.AddCards(moveCards, true, ref clearReveal, false);
         moveStack.Push(new CardMove(homeColNumber, closestColumn.ID, to, moveReveal, completedSequence, clearReveal));
         StopDragging(false);
+        AudioManager.Play("put", 0.25f);
         //Debug.Log("Good");
     }
 
@@ -377,37 +428,10 @@ public class GameManager : MonoBehaviour
 
         Colimn bestColumn = null;
         float columnScore = float.MinValue;
-        foreach (Colimn col in columns)
-        {
-            if (col == columns[moveCards.Last().column]) { /*Debug.Log(col.ID + " skip root column");*/ continue; }
-            if (col.cards.Count != 0 && col.cards.Last().number != moveCards[0].number + 1) { /*Debug.Log(col.ID + " Column not empty and Card can be placed here");*/ continue; }
-            if (moveCards.Last().number == 13)
-            {
-                if (col.cards.Count == 0) { columnScore = 0; bestColumn = col; /*Debug.Log(col.ID + " King and empty");*/ break; }
-                else { /*Debug.Log(col.ID + " King and not empty");*/ continue; }
-            }
-            if (col.cards.Count == 0) if (columnScore < 0) { columnScore = 0; bestColumn = col; /*Debug.Log(col.ID + " ZERO and free");*/ continue; } else continue;
-            float localScore = 100;
 
-            localScore += math.abs(moveCards.Last().column - col.ID) * 5;
 
-            int i = col.cards.Count - 2;
-            int number = col.cards.Last().number;
-            while (i >= 0 && (col.cards[i].number - 1) == number)
-            {
-                localScore += 100;
-                number++;
-                i--;
-            }
+        (bestColumn, columnScore) = CalculateBestMove(moveCards[0].column, moveCards[0].number, moveCards.Count);
 
-            //Debug.Log(col.ID + " Score " + localScore);
-            if (localScore > columnScore)
-            {
-                bestColumn = col;
-                columnScore = localScore;
-            }
-
-        }
         if (bestColumn == null) { /*Debug.Log("Now not able to place");*/ StopDragging(); return; }
         //Debug.Log(bestColumn.ID + " FINAL SCORE " + columnScore);
         bool revealed = false;
@@ -422,12 +446,269 @@ public class GameManager : MonoBehaviour
             card.SetSpeed((moveCards.Count - j++) / 10f + 1f);
         }
 
+        int i = moveCards.Count;
+        foreach (Card card in moveCards)
+        {
+            card.playSound = true;
+            card.movedCards = i;
+            i--;
+        }
+
         bool clearReveal = false;
         List<CardDummy> completedSequence = bestColumn.AddCards(moveCards, true, ref clearReveal, true);
         moveStack.Push(new CardMove(homeColNumber, bestColumn.ID, to, revealed, completedSequence, clearReveal));
 
         StopDragging(false);
     }
+
+    public (Colimn, float) CalculateBestMove(int fromColumn, int numberOnFirstCard, int numberOfCards)
+    {
+
+        Colimn bestColumn = null;
+        float bestScore = float.MinValue;
+
+        foreach (Colimn column in columns)
+        {
+            if (column.ID == fromColumn) { /*Debug.Log(col.ID + " skip root column");*/ continue; }
+            if (column.cards.Count != 0 && column.cards[column.cards.Count - 1].number != numberOnFirstCard + 1) { /*Debug.Log(col.ID + " Column not empty and Card can't be placed here");*/ continue; }
+
+            if (numberOnFirstCard == 13)
+            {
+                if (column.cards.Count == 0) { bestScore = 0 + numberOfCards; bestColumn = column; /*Debug.Log(col.ID + " King and empty");*/ break; }
+                else { /*Debug.Log(col.ID + " King and not empty");*/ continue; }
+            }
+
+            if (column.cards.Count == 0) if (bestScore < 0) { bestScore = 0 + numberOfCards; bestColumn = column; /*Debug.Log(col.ID + " ZERO and free");*/ continue; } else continue;
+
+            float localScore = 100;
+
+            localScore += math.abs(fromColumn - column.ID) * 5; // distance to from column
+
+            int i = column.cards.Count - 1; //number of cards in selectedChecking column
+                                            // Debug.Log(column.ID + " Start counting from: " + i);
+            int number = numberOnFirstCard + 1; //this is for checking how many cards are in a chain
+            float b = localScore;
+            while (i >= 0 && column.cards[i].number == number && column.cards[i].IsVisible() && column.cards[i].IsMovable())
+            {
+                //Debug.Log(i);
+                localScore += 100;
+                number++;
+                i--;
+            }
+            Debug.Log(localScore - b + " -- " + numberOfCards * 100);
+            localScore += numberOfCards * 100;
+
+
+            //Debug.Log(col.ID + " Score " + localScore);
+            if (localScore > bestScore)
+            {
+                bestColumn = column;
+                bestScore = localScore;
+            }
+
+        }
+
+        return (bestColumn, bestScore);
+    }
+
+    public void GiveHint()
+    {
+        if (moveCards.Count != 0) return;
+        Colimn fromBestColumn = null;
+        Colimn toBestColumn = null;
+        int formIndex = 52;
+        float bestColumnScore = float.MinValue;
+
+        foreach (Colimn column in columns)
+        {
+            for (int i = 0; i < column.cards.Count; i++)
+            {
+                if (!column.cards[i].IsVisible() || !column.cards[i].IsMovable()) continue;
+                Colimn calculatedColumn = null;
+                float calculatedColumnScore = float.MinValue;
+                (calculatedColumn, calculatedColumnScore) = CalculateBestMove(column.cards[i].column, column.cards[i].number, column.cards.Count - 1 - column.cards[i].indexInColumn);
+                if (calculatedColumn != null)
+                    Debug.Log("=============\n" + column.cards[i].number + " : " + calculatedColumnScore + "\nfrom: " + column.cards[i].column + "\nto:" + calculatedColumn.ID);
+                else
+                    Debug.Log("nem");
+
+                if (calculatedColumnScore == float.MinValue) continue;//if no move can be calculated for this card, then skip it;
+
+                if (calculatedColumn.cards.Count == 0 && i == 0
+                || i != 0 && calculatedColumn.cards.Count == 0 && column.cards[i].number + 1 == column.cards[i - 1].number) continue;//if the hint would involve moving all the cards taht were already in seriael to an empty column, just dont do it. this is to stop endless loop of hints moving the cards back and fourth.
+
+                if (calculatedColumn.cards.Count != 0)
+                {
+                    //subtract if cards were already in series
+                    int numberOfCardsInSeiesDifference = 0;
+                    int j = i - 1; //number of cards in selectedChecking column
+                    int number = -52;
+                    if (j >= 0)
+                        number = column.cards[j].number; //this is for checking how many cards are in a chain
+
+                    while (j >= 0 && (column.cards[j].number == number) && column.cards[j].IsVisible() && column.cards[j].IsMovable())
+                    {
+                        numberOfCardsInSeiesDifference--;
+                        number++;
+                        j--;
+                    }
+
+                    j = calculatedColumn.cards.Count - 1;
+                    if (j >= 0)
+                        number = calculatedColumn.cards[j].number;
+                    while (j >= 0 && (calculatedColumn.cards[j].number == number) && calculatedColumn.cards[j].IsVisible() && calculatedColumn.cards[j].IsMovable())
+                    {
+                        numberOfCardsInSeiesDifference++;
+                        number++;
+                        j--;
+                    }
+
+                    if (numberOfCardsInSeiesDifference <= 0) continue;
+                    calculatedColumnScore -= numberOfCardsInSeiesDifference * 100;
+                }
+
+                if (calculatedColumnScore > bestColumnScore)
+                {
+                    fromBestColumn = column;
+                    toBestColumn = calculatedColumn;
+                    formIndex = i;
+                    bestColumnScore = calculatedColumnScore;
+                }
+
+            }
+        }
+        if (fromBestColumn == null)
+        {
+            FlashDeckGraphic();
+            return;
+            /*int index = FirstEmptyColumn();
+
+            if (AllCardsMovable())
+            {
+                FlashDeckGraphic();
+                return;
+            }
+
+
+            if (index >= 0)
+            {
+
+                toBestColumn = columns[index];
+                fromBestColumn = null;
+
+                formIndex = 52;
+                bestColumnScore = float.MinValue;
+                foreach (Colimn column in columns)
+                {
+                    int currentScore = 0;
+                    for (int i = 0; i < column.cards.Count; i++)
+                    {
+                        if (!column.cards[i].IsVisible() || !column.cards[i].IsMovable()) continue;
+                        if (i == 0 && column.cards[i].IsVisible()) break;
+                        currentScore++;
+
+                    }
+                    if (bestColumnScore < currentScore)
+                    {
+                        bestColumnScore = currentScore;
+                        formIndex = column.cards.Count - currentScore;
+                        fromBestColumn = column;
+
+                    }
+                }
+            }
+            else
+            {
+                FlashDeckGraphic();
+                return;
+            }*/
+
+        }
+
+        AudioManager.Play("hint", 0.25f);
+
+        if (flashCardCoroutine != null)
+        {
+            StopCoroutine(flashCardCoroutine);
+            foreach (Card card in flashFrom)
+            {
+                if (card != null)
+                    card.background.color = Color.white;
+            }
+            foreach (Card card in flashTo)
+            {
+                if (card != null)
+                    card.background.color = Color.white;
+            }
+            flashFrom.Clear();
+            flashTo.Clear();
+        }
+        for (int i = fromBestColumn.cards.Count - 1; i >= formIndex; i--)
+            flashFrom.Add(fromBestColumn.cards[i]);
+        if (toBestColumn.cards.Count != 0)
+            flashTo.Add(toBestColumn.cards[toBestColumn.cards.Count - 1]);
+        flashCardCoroutine = StartCoroutine(FlashCards());
+        Debug.Log(fromBestColumn.ID + " " + toBestColumn.ID + " " + formIndex);
+    }
+
+    bool AllCardsMovable()
+    {
+        foreach (Colimn column in columns)
+        {
+
+            for (int i = 0; i < column.cards.Count; i++)
+            {
+                if (!column.cards[i].IsVisible()) continue;
+                if (!column.cards[i].IsMovable()) return false;
+
+            }
+        }
+        return true;
+    }
+
+    int FirstEmptyColumn()
+    {
+        int i = 0;
+        foreach (Colimn column in columns)
+        {
+            if (column.cards.Count == 0) return i;
+            i++;
+        }
+        return -52;
+    }
+
+    IEnumerator FlashCards()
+    {
+        float timer = 0;
+        while (timer <= 1)
+        {
+            timer += 0.2f;
+            yield return new WaitForSeconds(0.1f);
+            foreach (Card card in flashFrom)
+            {
+                if (card == null) yield break;
+                card.background.color = new Color(0.7f, 1f, 0.7f);
+            }
+            // if (flashTo.Count != 0)
+            foreach (Card card in flashTo)
+            {
+                card.background.color = new Color(1, 0.7f, 0.7f);
+            }
+
+            yield return new WaitForSeconds(0.1f);
+            foreach (Card card in flashFrom)
+            {
+                if (card == null) yield break;
+                card.background.color = Color.white;
+            }
+            foreach (Card card in flashTo)
+            {
+                card.background.color = Color.white;
+            }
+        }
+    }
+
+
 
     public void Win()
     {
@@ -460,6 +741,8 @@ public class GameManager : MonoBehaviour
             seconds = Mathf.FloorToInt(PlayerPrefs.GetFloat("HighScore") % 60F);
         }
         timeUi[1].text = minutes.ToString("00") + ":" + seconds.ToString("00");
+
+        AudioManager.Play("winApplause", 0.5f);
 
     }
 }

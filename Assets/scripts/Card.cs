@@ -29,6 +29,8 @@ public class Card : MonoBehaviour
     public TMP_Text numberGraphic;
     public Sprite back;
     public Sprite front;
+    public RectTransform[] rectNumbers;
+    public Vector2[] scales;
     public bool dragging = false;
     Colimn primeParent = null;//when card gets to parent column set prime parent as parent
 
@@ -36,6 +38,10 @@ public class Card : MonoBehaviour
     float distance;
     Vector2 previousPoint = Vector2.positiveInfinity;
     public float spacing = 52;
+    [System.NonSerialized]
+    public bool playSound = false;
+    [System.NonSerialized]
+    public int movedCards;
     public void Inicialize(int num, int sig)
     {
         rect.localScale = Vector3.one;
@@ -60,7 +66,7 @@ public class Card : MonoBehaviour
             case 10:
                 {
                     numberGraphic.text = number.ToString();
-                    numberGraphic.rectTransform.localScale = new Vector2(0.7f, 1);
+                    numberGraphic.rectTransform.localScale = new Vector2(0.7f, 0.9f);
                     break;
                 }
             case 11:
@@ -93,10 +99,27 @@ public class Card : MonoBehaviour
                     break;
                 }
         }
+        ChangeSize(ScreenOrientation.instance.isVertical);
 
         rect.position = new Vector3(rect.position.x, rect.position.y, 0);
 
 
+    }
+
+    public void ChangeSize(bool big)
+    {
+        if (big)
+        {
+            rectNumbers[0].localScale = scales[0];
+            rectNumbers[1].localScale = scales[1];
+            rectNumbers[2].localScale = number != 10 ? scales[2] : new Vector2(0.7f, 0.9f);
+        }
+        else
+        {
+            rectNumbers[0].localScale = scales[3];
+            rectNumbers[1].localScale = scales[4];
+            rectNumbers[2].localScale = scales[5];
+        }
     }
 
     public void SetColumn(int column)
@@ -132,6 +155,11 @@ public class Card : MonoBehaviour
         return symbol.enabled;
     }
 
+    public bool IsMovable()
+    {
+        return !tint.activeSelf;
+    }
+
     public void SetDarken(bool val)
     {
         if (val == tint.activeSelf) return;
@@ -148,7 +176,7 @@ public class Card : MonoBehaviour
         if (crds == null) return;
         previousPoint = eventData.position;
         GameManager.instance.StartDraging(crds);
-
+        AudioManager.Play("pull", 0.5f, true);
     }
 
     public void OnDrag(PointerEventData eventData)
@@ -194,6 +222,15 @@ public class Card : MonoBehaviour
                 GameManager.instance.columns[column].RecalculateOrder();
                 primeParent = null;
                 SetSpeed(1);
+                if (playSound)
+                {
+                    AudioManager.Play("put", 0.25f, true);
+                    Debug.Log(movedCards);
+                    for (int i = indexInColumn; i < movedCards + indexInColumn; i++)
+                    {
+                        GameManager.instance.columns[column].cards[i].playSound = false;
+                    }
+                }
             }
             rect.position = Vector2.Lerp(rect.position, newPos, Time.deltaTime * 10 * speedMultiply);
             return;
