@@ -1,10 +1,12 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Audio;
 
 public class AudioManager : MonoBehaviour
 {
     Dictionary<string, AudioClip> audioDictionary = new Dictionary<string, AudioClip>();
+    public AudioMixerGroup audioMixer;
     public static AudioManager Instance { get; private set; }
 
     private void Awake()
@@ -28,6 +30,7 @@ public class AudioManager : MonoBehaviour
         AudioSource audioSource = gameObject.AddComponent<AudioSource>();
         audioSource.clip = audio;
         audioSource.volume = volume;
+        audioSource.outputAudioMixerGroup = audioMixer;
         audioSource.pitch = vairyPitch ? (0.8f + 0.4f * Random.value) : 1;
         //PlayingAudio[id].source = audioSource;
         audioSource.Play();

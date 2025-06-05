@@ -18,6 +18,7 @@ public class GameManager : MonoBehaviour
     public RectTransform canvasRect;
     public Sprite[] symbols;
     public Sprite[] imageBg;
+    public Sprite cardBackSprite;
     public Color[] SymbolColors;
     public Colimn[] columns;
     public float spacing = 50;
@@ -196,6 +197,7 @@ public class GameManager : MonoBehaviour
         List<CardDummy> completedSequence = columns[column].AddCards(new List<Card>() { card }, visible ? true : false);
         card.ResetSize();
         card.SetPositionImeniate(SpawnCardsHere.transform.position);
+        card.SetBackImage(cardBackSprite);
         return completedSequence;
     }
 

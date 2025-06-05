@@ -277,7 +277,11 @@ public class Card : MonoBehaviour
         distance = 0;
     }
 
-
+    public void SetBackImage(Sprite tex)
+    {
+        back = tex;
+        if (!IsVisible()) background.sprite = back;
+    }
 
     public void OnPointerEnter(PointerEventData eventData)
     {
