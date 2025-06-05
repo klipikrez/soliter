@@ -1,12 +1,12 @@
 using UnityEngine;
 using UnityEngine.Serialization;
 using UnityEngine.UI;
-
+using UnityEngine.Events;
 public class ColorPreview : MonoBehaviour
 {
     [SerializeField, FormerlySerializedAs("previewGraphic")] private Graphic _previewGraphic;
     [SerializeField, FormerlySerializedAs("colorPicker")] private ColorPicker _colorPicker;
-
+    public UnityEvent<Color> myEvent;
     public void SetColor(Color c)
     {
         _colorPicker.color = c;
@@ -17,12 +17,16 @@ public class ColorPreview : MonoBehaviour
         _colorPicker.onColorChanged += OnColorChanged;
         OnColorChanged(_colorPicker.color);
 
-        SetColor(Color.cyan);
+        //SetColor(Color.cyan);
     }
+
+
+
 
     public void OnColorChanged(Color c)
     {
         _previewGraphic.color = c;
+        myEvent.Invoke(c);
     }
 
     private void OnDestroy()

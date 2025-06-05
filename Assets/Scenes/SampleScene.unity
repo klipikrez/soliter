@@ -5401,6 +5401,7 @@ MonoBehaviour:
   createButtons: {fileID: 3454800936914144341}
   audioSlider: {fileID: 1248445815}
   audioMixer: {fileID: 24100000, guid: ca3787b08e90c9d4bae1541716e6387c, type: 2}
+  backgroundShader: {fileID: 2100000, guid: 1b45517f13984ec4ba1c709cd657fc7b, type: 2}
 --- !u!4 &789477426
 Transform:
   m_ObjectHideFlags: 0
@@ -5723,8 +5724,8 @@ GameObject:
   - component: {fileID: 837597651}
   - component: {fileID: 837597650}
   - component: {fileID: 837597649}
-  - component: {fileID: 837597648}
   - component: {fileID: 837597647}
+  - component: {fileID: 837597652}
   m_Layer: 5
   m_Name: SelectButton (7)
   m_TagString: uiDontTest
@@ -5750,7 +5751,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 738.25, y: -350}
+  m_AnchoredPosition: {x: 1021.86, y: -350}
   m_SizeDelta: {x: 500, y: 700}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &837597647
@@ -5768,22 +5769,6 @@ MonoBehaviour:
   buttons: []
   settings: {fileID: 789477425}
   seletWindow: {fileID: 0}
---- !u!114 &837597648
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 837597645}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 76cae81f435ca094fab8a3e62d3badf7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  index: 0
-  selecotr: {fileID: 0}
-  image: {fileID: 1951059341}
-  master: {fileID: 837597647}
 --- !u!114 &837597649
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5828,7 +5813,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 837597648}
+      - m_Target: {fileID: 837597652}
         m_TargetAssemblyTypeName: MediaSelectButton, Assembly-CSharp
         m_MethodName: Select
         m_Mode: 1
@@ -5878,6 +5863,22 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 837597645}
   m_CullTransparentMesh: 1
+--- !u!114 &837597652
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 837597645}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 797e7a0169f31cf4387f7331e5aae260, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  index: 0
+  selecotr: {fileID: 0}
+  image: {fileID: 1951059341}
+  master: {fileID: 837597647}
 --- !u!1 &849647637
 GameObject:
   m_ObjectHideFlags: 0
@@ -8595,8 +8596,8 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 89888416}
   m_HandleRect: {fileID: 89888415}
   m_Direction: 2
-  m_Value: 0
-  m_Size: 1
+  m_Value: 1
+  m_Size: 0.7189162
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -12723,7 +12724,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1617098112}
   m_HandleRect: {fileID: 1617098111}
   m_Direction: 0
-  m_Value: 0
+  m_Value: 1
   m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
@@ -16128,6 +16129,30 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 2744819098671837771, guid: e891b50b877935b41810eef42886ec06, type: 3}
+      propertyPath: myEvent.m_PersistentCalls.m_Calls.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2744819098671837771, guid: e891b50b877935b41810eef42886ec06, type: 3}
+      propertyPath: myEvent.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 789477425}
+    - target: {fileID: 2744819098671837771, guid: e891b50b877935b41810eef42886ec06, type: 3}
+      propertyPath: myEvent.m_PersistentCalls.m_Calls.Array.data[0].m_CallState
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 2744819098671837771, guid: e891b50b877935b41810eef42886ec06, type: 3}
+      propertyPath: myEvent.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: SetBackgroundColor
+      objectReference: {fileID: 0}
+    - target: {fileID: 2744819098671837771, guid: e891b50b877935b41810eef42886ec06, type: 3}
+      propertyPath: myEvent.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
+      value: Settings, Assembly-CSharp
+      objectReference: {fileID: 0}
+    - target: {fileID: 2744819098671837771, guid: e891b50b877935b41810eef42886ec06, type: 3}
+      propertyPath: myEvent.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgumentAssemblyTypeName
+      value: UnityEngine.Object, UnityEngine
+      objectReference: {fileID: 0}
     - target: {fileID: 7126499556024429669, guid: e891b50b877935b41810eef42886ec06, type: 3}
       propertyPath: m_AnchoredPosition.x
       value: -9
@@ -16772,7 +16797,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Material: {fileID: 2100000, guid: 6929205712f5cb44db87ace0ffb52b6c, type: 2}
+  m_Material: {fileID: 2100000, guid: 1b45517f13984ec4ba1c709cd657fc7b, type: 2}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
@@ -17295,7 +17320,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 3454800937324408627}
   m_Direction: 0
   m_Value: 0
-  m_Size: 1
+  m_Size: 0.99999994
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -17954,7 +17979,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 3454800935695907073}
   m_Direction: 2
   m_Value: 1
-  m_Size: 0.39380953
+  m_Size: 0.39380947
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:

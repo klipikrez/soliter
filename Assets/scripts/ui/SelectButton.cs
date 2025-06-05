@@ -26,7 +26,8 @@ public class SelectButton : MonoBehaviour
         master.settings.SetCardBackTexture(index);
 
         master.DeselectAll();
-        selecotr.color = new Color(1, 1, 1, 1);
+        if (selecotr != null)
+            selecotr.color = new Color(1, 1, 1, 1);
         //master.mainImage.sprite = Sprite.Create((Texture2D)image.texture, new Rect(0, 0, 250, 350), new Vector2(0.5f, 0.5f));
     }
 

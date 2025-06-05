@@ -19,6 +19,7 @@ public class Settings : MonoBehaviour
     public CreateButtons createButtons;
     public Slider audioSlider;
     public AudioMixer audioMixer;
+    public Material backgroundShader;
 
     void Start()
     {
@@ -72,6 +73,17 @@ public class Settings : MonoBehaviour
         SaveSettings(settingsClass);
     }
 
+    public void SetBackgroundTexture(Texture spr)
+    {
+        backgroundShader.SetColor("col", Color.white);
+        backgroundShader.SetTexture("tex", spr);
+    }
+
+    public void SetBackgroundColor(Color color)
+    {
+        backgroundShader.SetColor("col", color);
+        backgroundShader.SetTexture("tex", null);
+    }
 
     public void LoadCardBackTexture(int index)
     {

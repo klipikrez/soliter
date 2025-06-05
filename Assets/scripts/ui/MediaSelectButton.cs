@@ -18,7 +18,7 @@ using( AndroidJavaClass ajc = new AndroidJavaClass( "com.yasirkula.unity.NativeG
     {
         Debug.Log("|||||||||||||||||||||||||select");
         openDialogueSelector();
-        //base.Select();
+
 
     }
 
@@ -54,21 +54,30 @@ using( AndroidJavaClass ajc = new AndroidJavaClass( "com.yasirkula.unity.NativeG
         new Vector2(0.5f, 0.5f));
 
                 image.sprite = sprite;
-
-
-                master.settings.SetCardBackTexture(index);
-                Debug.Log("|||||||||||||||||||||||||||||||||||||||||| index: " + index);
-                master.DeselectAll();
-                selecotr.color = new Color(1, 1, 1, 1);
-
-                byte[] bytes = texture.EncodeToPNG();
-                string filePath = Path.Combine(Application.persistentDataPath, "BOBOsmall.png");
-                File.WriteAllBytes(filePath, bytes);
-                Debug.Log("Saved image to: " + filePath);
+                AfterPickImagePicked();
 
 
             }
         });
+    }
+
+    public virtual void AfterPickImagePicked()
+    {
+
+
+        master.settings.SetCardBackTexture(index);
+        Debug.Log("|||||||||||||||||||||||||||||||||||||||||| index: " + index);
+
+        SaveIamge("BOBOsmall.png");
+        base.Select();
+    }
+
+    public void SaveIamge(string name)
+    {
+        byte[] bytes = image.sprite.texture.EncodeToPNG();
+        string filePath = Path.Combine(Application.persistentDataPath, "BOBOsmall.png");
+        File.WriteAllBytes(filePath, bytes);
+        Debug.Log("Saved image to: " + filePath);
     }
 
     public void LoadOldImage()
