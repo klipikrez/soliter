@@ -185,6 +185,7 @@ public class Colimn : MonoBehaviour
             Debug.Log(cards[i].IsVisible());
             if (!cards[i].IsVisible()) { /*Debug.Log("Invisibel [ " + i + "]: " + cards[i]);*/ return null; }
             if (cards[i].number != check) { /*Debug.Log("invalid mumber at [" + i + "]: " + cards[i].number + " != check");*/ return null; }
+            if (check != 1) if (GameManager.instance.gameMode.Check(cards[i].sign, cards[i + 1].sign)) return null;
 
             completedSequence.Add(new CardDummy(cards[i].number, cards[i].sign));
 
@@ -197,7 +198,7 @@ public class Colimn : MonoBehaviour
                 //Debug.Log("done reveal??:" + revealed);
                 GameManager.instance.CheckWin();
                 completedSequence.Reverse();
-                AudioManager.Play("pile", 0.25f);
+                AudioManager.Play("pile", 0.75f);
                 return completedSequence;
             }
             check++;
@@ -225,7 +226,7 @@ public class Colimn : MonoBehaviour
             if (!cards[i].IsVisible()) return;
             if (numberCheck > 13) numberCheck = -52; // set check number to -52 if we need to set all cards to be darkend
 
-            if (cards[i].number - 1 == numberCheck)
+            if (cards[i].number - 1 == numberCheck && GameManager.instance.gameMode.Check(cards[i].sign, cards[i + 1].sign))
             {
                 cards[i].SetDarken(false);
                 numberCheck++;

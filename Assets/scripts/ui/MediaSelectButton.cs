@@ -75,15 +75,15 @@ using( AndroidJavaClass ajc = new AndroidJavaClass( "com.yasirkula.unity.NativeG
     public void SaveIamge(string name)
     {
         byte[] bytes = image.sprite.texture.EncodeToPNG();
-        string filePath = Path.Combine(Application.persistentDataPath, "BOBOsmall.png");
+        string filePath = Path.Combine(Application.persistentDataPath, name);
         File.WriteAllBytes(filePath, bytes);
         Debug.Log("Saved image to: " + filePath);
     }
 
-    public void LoadOldImage()
+    public void LoadOldImage(string name)
     {
         Debug.Log("|||||||||||||||| LOAD OLD IMAGE");
-        string filePath = Path.Combine(Application.persistentDataPath, "BOBOsmall.png");
+        string filePath = Path.Combine(Application.persistentDataPath, name);
 
         if (File.Exists(filePath))
         {

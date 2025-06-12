@@ -7,12 +7,13 @@ public class ColorPreview : MonoBehaviour
     [SerializeField, FormerlySerializedAs("previewGraphic")] private Graphic _previewGraphic;
     [SerializeField, FormerlySerializedAs("colorPicker")] private ColorPicker _colorPicker;
     public UnityEvent<Color> myEvent;
+    int use = 0;
     public void SetColor(Color c)
     {
         _colorPicker.color = c;
     }
 
-    private void Start()
+    public void Inicialize()
     {
         _colorPicker.onColorChanged += OnColorChanged;
         OnColorChanged(_colorPicker.color);
@@ -25,8 +26,10 @@ public class ColorPreview : MonoBehaviour
 
     public void OnColorChanged(Color c)
     {
+        if (use <= 1) { use++; return; }
         _previewGraphic.color = c;
         myEvent.Invoke(c);
+
     }
 
     private void OnDestroy()

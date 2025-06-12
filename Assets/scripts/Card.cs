@@ -124,6 +124,7 @@ public class Card : MonoBehaviour
 
     public void SetColumn(int column)
     {
+        Debug.Log(column);
         this.column = column;
         this.indexInColumn = GameManager.instance.columns[column].cards.Count;
     }
@@ -172,11 +173,12 @@ public class Card : MonoBehaviour
 
         if (GameManager.instance.moveCards.Count != 0) return;
         if (this.IsVisible() == false) return;
+        if (this.IsMovable() == false) return;
         List<Card> crds = GameManager.instance.columns[column].DragCards(indexInColumn);
         if (crds == null) return;
         previousPoint = eventData.position;
         GameManager.instance.StartDraging(crds);
-        AudioManager.Play("pull", 0.5f, true);
+        AudioManager.Play("pull", 1f, true);
     }
 
     public void OnDrag(PointerEventData eventData)
@@ -224,7 +226,7 @@ public class Card : MonoBehaviour
                 SetSpeed(1);
                 if (playSound)
                 {
-                    AudioManager.Play("put", 0.25f, true);
+                    AudioManager.Play("put", 0.75f, true);
                     Debug.Log(movedCards);
                     for (int i = indexInColumn; i < movedCards + indexInColumn; i++)
                     {
