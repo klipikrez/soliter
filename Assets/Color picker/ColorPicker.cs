@@ -151,6 +151,12 @@ public class ColorPicker : UIBehaviour, IPointerDownHandler, IDragHandler, IPoin
 
     private void ApplyColor()
     {
+        if (_generatedMaterial == null)
+        {
+            _generatedMaterial = new Material(_colorPickerShader);
+            _generatedMaterial.hideFlags = HideFlags.HideAndDontSave;
+        }
+
         _generatedMaterial.SetVector(_HSV, new Vector3(_h, _s, _v));
 
         onColorChanged?.Invoke(color);
