@@ -102,6 +102,6 @@ Material:
     - _Color_3: {r: 0.25490198, g: 0.0011569981, b: 0.025569575, a: 1}
     - _RendererColor: {r: 1, g: 1, b: 1, a: 1}
     - _Vector2: {r: -47.9, g: -52.8, b: 0, a: 0}
-    - col: {r: 0.19, g: 0, b: 0, a: 1}
+    - col: {r: 0, g: 0, b: 0, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
