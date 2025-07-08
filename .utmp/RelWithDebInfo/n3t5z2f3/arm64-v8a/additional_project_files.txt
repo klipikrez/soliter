@@ -13,3 +13,4 @@ C:\Users\Nik0la\BOKI\unity\Soliter\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLi
 C:\Users\Nik0la\BOKI\unity\Soliter\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\cpp\GameActivity\UnityToGACallbacks.h
 C:\Users\Nik0la\BOKI\unity\Soliter\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\cpp\GameActivity\UnityToGAKeyEventCallbacks.h
 C:\Users\Nik0la\BOKI\unity\Soliter\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\cpp\GameActivity\UnityToGAMotionEventCallbacks.h
+C:\Users\Nik0la\BOKI\unity\Soliter\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\cpp\FramePacing\UnitySwappyWrapper.h

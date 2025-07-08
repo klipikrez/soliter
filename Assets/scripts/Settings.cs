@@ -27,6 +27,8 @@ public class Settings : MonoBehaviour
     public MediaSelectButtonBackground mediaSelectButtonBackground;
     public GameObject settingsCanvas;
 
+    public GameObject[] gamemodeButtons;
+
     public void LoadSettings()
     {
         SettingsClass settingsClass = GetSettingsClass();
@@ -56,11 +58,13 @@ public class Settings : MonoBehaviour
     }
     public void SaveSettings(SettingsClass settingsClass)
     {
+
         string json = JsonUtility.ToJson(settingsClass, true);
         string path = Path.Combine(Application.persistentDataPath, "settings.rez");
+        //Debug.Log("boban" + path);
         File.WriteAllText(path, json);
-
-        Debug.Log("Saved JSON to: " + path);
+        Debug.Log("GameMode path: " + path);
+        //Debug.Log("Saved JSON to: " + path);
     }
 
     public void ResetSettings()
@@ -182,33 +186,46 @@ public class Settings : MonoBehaviour
 
     public void LoadGameMode(int i)
     {
+        Debug.Log("GameMode load: " + i);
         SetGamemode(i);
 
     }
     public void SetGamemode(int i)
     {
+        Debug.Log("GameMode set: " + i);
         SettingsClass settingsClass = GetSettingsClass();
         settingsClass.gameMode = i;
-
+        Debug.Log("GameMode set: " + settingsClass.gameMode);
         switch (i)
         {
             case 0:
                 {
                     GameManager.instance.SetOneSuit();
-                    return;
+                    SetSelectedGememodeGraphic(0);
+                    break;
                 }
             case 1:
                 {
                     GameManager.instance.SetTwoSuit();
-                    return;
+                    SetSelectedGememodeGraphic(1);
+                    break;
                 }
             case 2:
                 {
                     GameManager.instance.SetFourSuit();
-                    return;
+                    SetSelectedGememodeGraphic(2);
+                    break;
                 }
         }
 
         SaveSettings(settingsClass);
+    }
+
+    public void SetSelectedGememodeGraphic(int i)
+    {
+        Debug.Log(i + " NUTTON");
+        foreach (GameObject nutton in gamemodeButtons)
+            nutton.SetActive(false);
+        gamemodeButtons[i].SetActive(true);
     }
 }

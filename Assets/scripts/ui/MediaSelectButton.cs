@@ -16,7 +16,7 @@ using( AndroidJavaClass ajc = new AndroidJavaClass( "com.yasirkula.unity.NativeG
     }
     public override void Select()
     {
-        Debug.Log("|||||||||||||||||||||||||select");
+        //Debug.Log("|||||||||||||||||||||||||select");
         openDialogueSelector();
 
 
@@ -33,18 +33,18 @@ using( AndroidJavaClass ajc = new AndroidJavaClass( "com.yasirkula.unity.NativeG
 
     private void PickImage(int maxSize, bool markTextureNonReadable)
     {
-        Debug.Log("|||||||||||||||| PICK NEW IMAGE");
+        //Debug.Log("|||||||||||||||| PICK NEW IMAGE");
         NativeGallery.GetImageFromGallery((path) =>
         {
-            Debug.Log("|| Selected image path: " + path);
+            //  Debug.Log("|| Selected image path: " + path);
             if (path != null)
             {
-                Debug.Log("||path not null");
+                //    Debug.Log("||path not null");
                 // Create Texture from selected image
                 Texture2D texture = NativeGallery.LoadImageAtPath(path, maxSize, markTextureNonReadable);
                 if (texture == null)
                 {
-                    Debug.Log("||||||||Couldn't load texture from " + path);
+                    //      Debug.Log("||||||||Couldn't load texture from " + path);
                     return;
                 }
                 //texture = duplicateTexture(texture);
@@ -66,7 +66,7 @@ using( AndroidJavaClass ajc = new AndroidJavaClass( "com.yasirkula.unity.NativeG
 
 
         master.settings.SetCardBackTexture(index);
-        Debug.Log("|||||||||||||||||||||||||||||||||||||||||| index: " + index);
+        //Debug.Log("|||||||||||||||||||||||||||||||||||||||||| index: " + index);
 
         SaveIamge("BOBOsmall.png");
         base.Select();
@@ -77,12 +77,12 @@ using( AndroidJavaClass ajc = new AndroidJavaClass( "com.yasirkula.unity.NativeG
         byte[] bytes = image.sprite.texture.EncodeToPNG();
         string filePath = Path.Combine(Application.persistentDataPath, name);
         File.WriteAllBytes(filePath, bytes);
-        Debug.Log("Saved image to: " + filePath);
+        //Debug.Log("Saved image to: " + filePath);
     }
 
     public void LoadOldImage(string name)
     {
-        Debug.Log("|||||||||||||||| LOAD OLD IMAGE");
+        //Debug.Log("|||||||||||||||| LOAD OLD IMAGE");
         string filePath = Path.Combine(Application.persistentDataPath, name);
 
         if (File.Exists(filePath))
@@ -97,12 +97,12 @@ using( AndroidJavaClass ajc = new AndroidJavaClass( "com.yasirkula.unity.NativeG
                     new Vector2(0.5f, 0.5f));
 
             image.sprite = sprite;
-            Debug.Log("Loaded image from: " + filePath);
+            //Debug.Log("Loaded image from: " + filePath);
             //master.mainImage.sprite = Sprite.Create((Texture2D)image.texture, new Rect(0, 0, 250, 350), new Vector2(0.5f, 0.5f));
         }
         else
         {
-            Debug.LogWarning("Image file not found: " + filePath);
+            //Debug.LogWarning("Image file not found: " + filePath);
         }
     }
     Texture2D duplicateTexture(Texture2D source)

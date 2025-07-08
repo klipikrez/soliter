@@ -124,7 +124,7 @@ public class Card : MonoBehaviour
 
     public void SetColumn(int column)
     {
-        Debug.Log(column);
+        //  Debug.Log(column);
         this.column = column;
         this.indexInColumn = GameManager.instance.columns[column].cards.Count;
     }

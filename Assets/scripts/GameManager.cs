@@ -57,7 +57,7 @@ public class GameManager : MonoBehaviour
         instance = this;
         touch = input.actions["Point"];
         canvasRect = canvasRect.GetComponent<RectTransform>();
-
+        GetGPLogin().AutoSignIn();
     }
 
     private void OnEnable()
@@ -72,6 +72,7 @@ public class GameManager : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
+        Debug.Log("strat");
         for (int i = 0; i < columns.Length; i++)
         {
             columns[i].ID = i;
@@ -450,7 +451,7 @@ public class GameManager : MonoBehaviour
         float columnScore = float.MinValue;
 
 
-        (bestColumn, columnScore) = CalculateBestMove(moveCards[0].column, moveCards[0].number, moveCards.Count, moveCards[0].sign);
+        (bestColumn, columnScore) = CalculateBestMove(moveCards[0].column, moveCards[0].number, moveCards.Count, moveCards[0].sign, moveCards[0].indexInColumn >= 1 ? columns[moveCards[0].column].cards[moveCards[0].indexInColumn - 1].IsMovable() : false);
 
         if (bestColumn == null) { /*Debug.Log("Now not able to place");*/ StopDragging(); return; }
         //Debug.Log(bestColumn.ID + " FINAL SCORE " + columnScore);
@@ -481,7 +482,7 @@ public class GameManager : MonoBehaviour
         StopDragging(false);
     }
 
-    public (Colimn, float) CalculateBestMove(int fromColumn, int numberOnFirstCard, int numberOfCards, int signOnDragCard)
+    public (Colimn, float) CalculateBestMove(int fromColumn, int numberOnFirstCard, int numberOfCards, int signOnFirstCard, bool isCardUnderFirstVisible)
     {
 
         Colimn bestColumn = null;
@@ -489,23 +490,23 @@ public class GameManager : MonoBehaviour
 
         foreach (Colimn column in columns)
         {
-            if (column.ID == fromColumn) { /*Debug.Log(col.ID + " skip root column");*/ continue; }
-            if (column.cards.Count != 0 && column.cards[column.cards.Count - 1].number != numberOnFirstCard + 1) { /*Debug.Log(col.ID + " Column not empty and Card can't be placed here");*/ continue; }
+            if (column.ID == fromColumn) { /*Debug.Log(column.ID + " skip root column");*/ continue; }
+            if (column.cards.Count != 0 && column.cards[column.cards.Count - 1].number != numberOnFirstCard + 1) { /*Debug.Log(column.ID + " Column not empty and Card can't be placed here");*/ continue; }
 
             if (numberOnFirstCard == 13)
             {
-                if (column.cards.Count == 0) { bestScore = 0 + numberOfCards; bestColumn = column; /*Debug.Log(col.ID + " King and empty");*/ break; }
-                else { /*Debug.Log(col.ID + " King and not empty");*/ continue; }
+                if (column.cards.Count == 0) { bestScore = 0 + numberOfCards; bestColumn = column; /*Debug.Log(column.ID + " King and empty");*/ break; }
+                else { /*Debug.Log(column.ID + " King and not empty");*/ continue; }
             }
 
-            if (column.cards.Count == 0) if (bestScore < 0) { bestScore = 0 + numberOfCards; bestColumn = column; /*Debug.Log(col.ID + " ZERO and free");*/ continue; } else continue;
+            if (column.cards.Count == 0) if (bestScore < 0) { bestScore = 0 + numberOfCards; bestColumn = column; /*Debug.Log(column.ID + " ZERO and free");*/ continue; } else continue;
 
             float localScore = 100;
 
             localScore += math.abs(fromColumn - column.ID) * 5; // distance to from column
 
             int i = column.cards.Count - 1; //number of cards in selectedChecking column
-                                            // Debug.Log(column.ID + " Start counting from: " + i);
+            //Debug.Log(column.ID + " Start counting from: " + i);
             int number = numberOnFirstCard + 1; //this is for checking how many cards are in a chain
             float b = localScore;
             while (i >= 0 && column.cards[i].number == number && column.cards[i].IsVisible() && (column.cards[i].IsMovable()))
@@ -515,12 +516,41 @@ public class GameManager : MonoBehaviour
                 number++;
                 i--;
             }
-            // Debug.Log(localScore - b + " -- " + numberOfCards * 100);
+            //Debug.Log(localScore - b + " -- " + numberOfCards * 100);
             localScore += numberOfCards * 100;
 
-            if (!gameMode.Check(column.cards[i].sign, signOnDragCard)) localScore /= 2;
+            if (!gameMode.Check(column.cards[column.cards.Count - 1].sign, signOnFirstCard)) localScore /= 10;
+            if (!gameMode.Check(column.cards[column.cards.Count - 1].sign, signOnFirstCard) &&
+            (column.cards[column.cards.Count - 1].IsMovable() || isCardUnderFirstVisible)) localScore -= 1000;
+            string sign = "";
 
-            //Debug.Log(col.ID + " Score " + localScore);
+            //this was for testing to always piick the higher card move
+            //localScore += numberOnFirstCard * 20;
+
+            switch (column.cards[column.cards.Count - 1].sign)
+            {
+                case 0:
+                    {
+                        sign = "♣";
+                        break;
+                    }
+                case 1:
+                    {
+                        sign = "♠";
+                        break;
+                    }
+                case 2:
+                    {
+                        sign = "♥";
+                        break;
+                    }
+                case 3:
+                    {
+                        sign = "♦";
+                        break;
+                    }
+            }
+            Debug.Log("from column:" + fromColumn + " | to column: " + column.ID + " | card number and sign: " + column.cards[column.cards.Count - 1].number + "-" + sign + column.cards[column.cards.Count - 1].sign + " | Score " + localScore + " | Check: " + gameMode.Check(column.cards[column.cards.Count - 1].sign, signOnFirstCard));
             if (localScore > bestScore)
             {
                 bestColumn = column;
@@ -549,13 +579,43 @@ public class GameManager : MonoBehaviour
                 if (!column.cards[i].IsVisible() || !column.cards[i].IsMovable()) continue;
                 Colimn calculatedColumn = null;
                 float calculatedColumnScore = float.MinValue;
-                (calculatedColumn, calculatedColumnScore) = CalculateBestMove(column.cards[i].column, column.cards[i].number, column.cards.Count - 1 - column.cards[i].indexInColumn, column.cards[i].sign);
+                Debug.Log("||||||||||||||||||||||||||||||||");
+                string sign = "";
+                switch (column.cards[i].sign)
+                {
+                    case 0:
+                        {
+                            sign = "♣";
+                            break;
+                        }
+                    case 1:
+                        {
+                            sign = "♠";
+                            break;
+                        }
+                    case 2:
+                        {
+                            sign = "♥";
+                            break;
+                        }
+                    case 3:
+                        {
+                            sign = "♦";
+                            break;
+                        }
+                }
+                Debug.Log("from column:" + column.ID + " | card number and sign: " + column.cards[i].number + "-" + sign + column.cards[i].sign + " | Score ");
+
+                (calculatedColumn, calculatedColumnScore) = CalculateBestMove(column.cards[i].column, column.cards[i].number, column.cards.Count - 1 - column.cards[i].indexInColumn, column.cards[i].sign, (i >= 1) ? column.cards[i - 1].IsMovable() : false);
                 /*if (calculatedColumn != null)
                     Debug.Log("=============\n" + column.cards[i].number + " : " + calculatedColumnScore + "\nfrom: " + column.cards[i].column + "\nto:" + calculatedColumn.ID);
                 else
                     Debug.Log("nem");*/
 
                 if (calculatedColumnScore == float.MinValue) continue;//if no move can be calculated for this card, then skip it;
+                //if (calculatedColumnScore >= 0) continue;
+                /*if (!gameMode.Check(calculatedColumn.cards[calculatedColumn.cards.Count - 1].sign, column.cards[i].sign) &&
+                (calculatedColumn.cards[calculatedColumn.cards.Count >= 1 ? calculatedColumn.cards.Count - 1 : 0].IsMovable() || ((i >= 1) ? column.cards[i - 1].IsMovable() : false))) continue;*/
 
                 if (calculatedColumn.cards.Count == 0 && i == 0
                 || i != 0 && calculatedColumn.cards.Count == 0 && column.cards[i].number + 1 == column.cards[i - 1].number) continue;//if the hint would involve moving all the cards taht were already in seriael to an empty column, just dont do it. this is to stop endless loop of hints moving the cards back and fourth.
@@ -585,12 +645,13 @@ public class GameManager : MonoBehaviour
                         number++;
                         j--;
                     }
-                    Debug.Log(i + ":" + column.cards[i].sign + " -- " + (i == 0 ? 0 : i - 1) + ":" + column.cards[i == 0 ? 0 : i - 1].sign + " || " + column.cards[i].number + " - " + column.cards[i - 1].number);
-                    if (!gameMode.Check(column.cards[i].sign, column.cards[i == 0 ? 0 : i - 1].sign) && column.cards[i].number == column.cards[i - 1].number - 1)
-                    {
-                        Debug.Log("|||||||||||||||||||||||||||||NAAAAAAAH" + numberOfCardsInSeiesDifference);
-                        numberOfCardsInSeiesDifference--;
-                    }
+                    //Debug.Log(i + ":" + column.cards[i].sign + " -- " + (i == 0 ? 0 : i - 1) + ":" + column.cards[i == 0 ? 0 : i - 1].sign + " || " + column.cards[i].number + " - " + column.cards[i - 1].number);
+                    if (calculatedColumn.cards.Count - 1 >= 0 && i - 1 >= 0)
+                        if (!gameMode.Check(calculatedColumn.cards[calculatedColumn.cards.Count - 1].sign, column.cards[i].sign) && column.cards[i].number == column.cards[i - 1].number - 1)
+                        {
+                            //Debug.Log("|||||||||||||||||||||||||||||NAAAAAAAH" + numberOfCardsInSeiesDifference);
+                            numberOfCardsInSeiesDifference--;
+                        }
 
                     if (numberOfCardsInSeiesDifference <= 0) continue;
                     calculatedColumnScore -= numberOfCardsInSeiesDifference * 100;
@@ -677,7 +738,7 @@ public class GameManager : MonoBehaviour
         if (toBestColumn.cards.Count != 0)
             flashTo.Add(toBestColumn.cards[toBestColumn.cards.Count - 1]);
         flashCardCoroutine = StartCoroutine(FlashCards());
-        Debug.Log(fromBestColumn.ID + " " + toBestColumn.ID + " " + formIndex);
+        Debug.Log("from beat column to best column, from index:" + fromBestColumn.ID + " " + toBestColumn.ID + " " + formIndex);
     }
 
 
@@ -713,7 +774,15 @@ public class GameManager : MonoBehaviour
         }
     }
 
-
+    GPLogin gPLogin = null;
+    public GPLogin GetGPLogin()
+    {
+        if (gPLogin == null)
+        {
+            gPLogin = gameObject.GetComponent<GPLogin>();
+        }
+        return gPLogin;
+    }
 
     public void Win()
     {
@@ -726,24 +795,32 @@ public class GameManager : MonoBehaviour
 
         timeUi[0].text = minutes.ToString("00") + ":" + seconds.ToString("00");
 
-        if (PlayerPrefs.HasKey("HighScore"))
+        string gamemodePrefix = gameMode.id == 1 ? "" : gameMode.id.ToString();
+
+        if (PlayerPrefs.HasKey("HighScore" + gamemodePrefix))
         {
-            if (PlayerPrefs.GetFloat("HighScore") > Timer)
+            if (PlayerPrefs.GetFloat("HighScore" + gamemodePrefix) > Timer)
             {
                 if (!Application.isEditor)
-                    PlayerPrefs.SetFloat("HighScore", Timer);
+                {
+                    PlayerPrefs.SetFloat("HighScore" + gamemodePrefix, Timer);
+                    GetGPLogin().WriteToLeaderboard((long)(Timer * 1000), gameMode.id);
+                }
             }
         }
         else
         {
             if (!Application.isEditor)
-                PlayerPrefs.SetFloat("HighScore", Timer);
+            {
+                PlayerPrefs.SetFloat("HighScore" + gamemodePrefix, Timer);
+                GetGPLogin().WriteToLeaderboard((long)(Timer * 1000), gameMode.id);
+            }
         }
 
         if (!Application.isEditor)
         {
-            minutes = Mathf.FloorToInt(PlayerPrefs.GetFloat("HighScore") / 60F);
-            seconds = Mathf.FloorToInt(PlayerPrefs.GetFloat("HighScore") % 60F);
+            minutes = Mathf.FloorToInt(PlayerPrefs.GetFloat("HighScore" + gamemodePrefix) / 60F);
+            seconds = Mathf.FloorToInt(PlayerPrefs.GetFloat("HighScore" + gamemodePrefix) % 60F);
         }
         timeUi[1].text = minutes.ToString("00") + ":" + seconds.ToString("00");
 

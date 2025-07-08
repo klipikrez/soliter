@@ -182,10 +182,8 @@ public class Colimn : MonoBehaviour
         int check = 1;
         for (int i = cards.Count - 1; i >= 0; i--)
         {
-            Debug.Log(cards[i].IsVisible());
-            if (!cards[i].IsVisible()) { /*Debug.Log("Invisibel [ " + i + "]: " + cards[i]);*/ return null; }
-            if (cards[i].number != check) { /*Debug.Log("invalid mumber at [" + i + "]: " + cards[i].number + " != check");*/ return null; }
-            if (check != 1) if (GameManager.instance.gameMode.Check(cards[i].sign, cards[i + 1].sign)) return null;
+            if (!cards[i].IsVisible()) { Debug.Log("Invisibel [ " + i + "]: " + cards[i]); return null; }
+            if (cards[i].number != check) { Debug.Log("invalid mumber at [" + i + "]: " + cards[i].number + " != check"); return null; }
 
             completedSequence.Add(new CardDummy(cards[i].number, cards[i].sign));
 
@@ -200,6 +198,11 @@ public class Colimn : MonoBehaviour
                 completedSequence.Reverse();
                 AudioManager.Play("pile", 0.75f);
                 return completedSequence;
+            }
+            else
+            {
+                if (i - 1 >= 0)
+                    if (!GameManager.instance.gameMode.Check(cards[i].sign, cards[i - 1].sign)) return null;
             }
             check++;
         }
