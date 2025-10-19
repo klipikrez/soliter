@@ -227,6 +227,7 @@ public class Card : MonoBehaviour
                 if (playSound)
                 {
                     AudioManager.Play("put", 0.75f, true);
+                    Background.Instance.Flash(0.15f);
                     Debug.Log(movedCards);
                     for (int i = indexInColumn; i < movedCards + indexInColumn; i++)
                     {

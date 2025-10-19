@@ -38,6 +38,7 @@ public class GameManager : MonoBehaviour
     public TMP_Text[] timer;
     public TMP_Text[] DecksLeft;
     public List<Transform> DeckCardGraphics = new List<Transform>();
+    public Material DealCardMaterial;
     Vector2 mousePos = Vector2.zero;
     public GameObject[] WinActiate;
     public TMP_Text[] timeUi;
@@ -348,23 +349,17 @@ public class GameManager : MonoBehaviour
         float timer = 0;
         while (timer <= 1)
         {
-            timer += 0.2f;
-            yield return new WaitForSeconds(0.1f);
-            foreach (RectTransform card in DeckCardGraphics)
-            {
-                if (card == null) yield break;
-                card.gameObject.GetComponent<UnityEngine.UI.Image>().color = new Color(0.7f, 1f, 0.7f);
-            }
+            timer += Time.deltaTime;
+            yield return new WaitForEndOfFrame();
 
-
-            yield return new WaitForSeconds(0.1f);
-            foreach (RectTransform card in DeckCardGraphics)
-            {
-                if (card == null) yield break;
-                card.gameObject.GetComponent<UnityEngine.UI.Image>().color = Color.white;
-            }
+            DealCardMaterial.SetFloat("_timer", timer);
 
         }
+
+
+        DealCardMaterial.SetFloat("_timer", 0);
+
+
     }
 
     public void ResetDeckGraphics()

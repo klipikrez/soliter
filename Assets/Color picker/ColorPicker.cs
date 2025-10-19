@@ -10,7 +10,7 @@ using static UnityEngine.Mathf;
 public class ColorPicker : UIBehaviour, IPointerDownHandler, IDragHandler, IPointerUpHandler, IMaterialModifier
 {
     private const float Recip2Pi = 0.5f / PI;
-    private const string ColorPickerShaderName = "UI/ColorPicker";
+    private const string ColorPickerShaderName = "UI/Default";
 
     private static readonly int _HSV = Shader.PropertyToID(nameof(_HSV));
     private static readonly int _AspectRatio = Shader.PropertyToID(nameof(_AspectRatio));
@@ -48,7 +48,7 @@ public class ColorPicker : UIBehaviour, IPointerDownHandler, IDragHandler, IPoin
     protected override void Reset()
     {
         base.Reset();
-
+Debug.Log("boooooooooooooooo");
         _colorPickerShader = Shader.Find(ColorPickerShaderName);
     }
 #endif

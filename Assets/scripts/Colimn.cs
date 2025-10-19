@@ -197,6 +197,7 @@ public class Colimn : MonoBehaviour
                 GameManager.instance.CheckWin();
                 completedSequence.Reverse();
                 AudioManager.Play("pile", 0.75f);
+                Background.Instance.Flash(1f);
                 return completedSequence;
             }
             else

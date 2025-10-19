@@ -49,9 +49,14 @@ using( AndroidJavaClass ajc = new AndroidJavaClass( "com.yasirkula.unity.NativeG
                 }
                 //texture = duplicateTexture(texture);
                 texture.wrapMode = TextureWrapMode.Clamp;
+
+                texture = ResizeAndCropTexture(texture);
+
                 Sprite sprite = Sprite.Create(texture,
         new Rect(0, 0, texture.width, texture.height),
         new Vector2(0.5f, 0.5f));
+
+
 
                 image.sprite = sprite;
                 AfterPickImagePicked();
@@ -59,6 +64,61 @@ using( AndroidJavaClass ajc = new AndroidJavaClass( "com.yasirkula.unity.NativeG
 
             }
         });
+    }
+
+
+    Texture2D ResizeAndCropTexture(Texture2D texture2D)
+    {
+        int targetWidth = 250;
+        int targetHeight = 350;
+
+        int width = texture2D.width;
+        int height = texture2D.height;
+
+        // Determine the aspect ratios
+        float targetAspect = (float)targetWidth / targetHeight;
+        float sourceAspect = (float)width / height;
+
+        int cropWidth = width;
+        int cropHeight = height;
+        int xMin = 0;
+        int yMin = 0;
+
+        // Crop to match the target aspect ratio while keeping the center
+        if (sourceAspect > targetAspect)
+        {
+            // Source is wider than target
+            cropWidth = Mathf.RoundToInt(height * targetAspect);
+            xMin = (width - cropWidth) / 2;
+        }
+        else if (sourceAspect < targetAspect)
+        {
+            // Source is taller than target
+            cropHeight = Mathf.RoundToInt(width / targetAspect);
+            yMin = (height - cropHeight) / 2;
+        }
+
+        // Crop the texture
+        Texture2D croppedTexture = new Texture2D(cropWidth, cropHeight);
+        croppedTexture.SetPixels(texture2D.GetPixels(xMin, yMin, cropWidth, cropHeight));
+        croppedTexture.Apply();
+
+        // Resize to target dimensions
+        Texture2D resizedTexture = new Texture2D(targetWidth, targetHeight, TextureFormat.RGBA32, false);
+        for (int y = 0; y < targetHeight; y++)
+        {
+            for (int x = 0; x < targetWidth; x++)
+            {
+                // Sample color from cropped texture (bilinear)
+                float u = (float)x / targetWidth;
+                float v = (float)y / targetHeight;
+                Color color = croppedTexture.GetPixelBilinear(u, v);
+                resizedTexture.SetPixel(x, y, color);
+            }
+        }
+
+        resizedTexture.Apply();
+        return resizedTexture;
     }
 
     public virtual void AfterPickImagePicked()

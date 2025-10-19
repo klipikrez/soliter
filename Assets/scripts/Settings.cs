@@ -28,6 +28,7 @@ public class Settings : MonoBehaviour
     public GameObject settingsCanvas;
 
     public GameObject[] gamemodeButtons;
+    public Background backgroundScript;
 
     public void LoadSettings()
     {
@@ -105,8 +106,7 @@ public class Settings : MonoBehaviour
 
     public void SetBackgroundTexture(Texture spr)
     {
-        backgroundShader.SetColor("col", Color.white);
-        backgroundShader.SetTexture("tex", spr);
+        backgroundScript.SetBackgroundTexture(spr);
 
         SettingsClass settings = GetSettingsClass();
         settings.background = 1;
@@ -115,8 +115,7 @@ public class Settings : MonoBehaviour
 
     public void SetBackgroundColor(Color color)
     {
-        backgroundShader.SetColor("col", color);
-        backgroundShader.SetTexture("tex", null);
+        backgroundScript.SetBackgroundColor(color);
 
         SettingsClass settings = GetSettingsClass();
         settings.background = 0;
@@ -144,9 +143,7 @@ public class Settings : MonoBehaviour
 
         mediaSelectButtonBackground.LoadOldImage("BOBObig.png");
 
-        backgroundShader.SetColor("col", Color.white);
-        backgroundShader.SetTexture("tex", mediaSelectButtonBackground.image.mainTexture);
-
+        backgroundScript.SetBackgroundTexture(mediaSelectButtonBackground.image.mainTexture);
 
 
     }
@@ -155,8 +152,7 @@ public class Settings : MonoBehaviour
     {
         Color ser = GetSettingsClass().bgColor;
         colorPreview.SetColor(ser);
-        backgroundShader.SetColor("col", ser);
-        backgroundShader.SetTexture("tex", null);
+        backgroundScript.SetBackgroundColor(ser);
     }
 
     public void LoadCardBackTexture(int index)
