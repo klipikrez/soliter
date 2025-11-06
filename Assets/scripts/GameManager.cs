@@ -121,7 +121,7 @@ public class GameManager : MonoBehaviour
                     out localPosition
                 );
 
-                card.SetPosition(new Vector2(0, -GameManager.instance.spacing * i++) + localPosition);
+                card.SetPosition(new Vector2(0, -GameManager.instance.spacing * i++) + new Vector2(localPosition.x, localPosition.y * (ScreenOrientation.instance.isVertical ? 1f : 1.2f)));
                 card.SetSpeed((moveCards.Count - i) / 2f + 1);
             }
         }
@@ -275,6 +275,7 @@ public class GameManager : MonoBehaviour
 
         UpdateDeckGraphics();
         AudioManager.Play("deal", 0.75f);
+        GameManager.instance.ShakeCards(0.2f, 500f, 145f);
     }
 
     public void CheckWin()
@@ -822,4 +823,14 @@ public class GameManager : MonoBehaviour
         AudioManager.Play("winApplause", 0.5f);
 
     }
+
+
+    public void ShakeCards(float duration, float strenth, float speed)
+    {
+        foreach (Colimn colimn in columns)
+        {
+            colimn.ShakeCards(duration, strenth, speed);
+        }
+    }
+
 }

@@ -228,6 +228,7 @@ public class Card : MonoBehaviour
                 {
                     AudioManager.Play("put", 0.75f, true);
                     Background.Instance.Flash(0.15f);
+                    GameManager.instance.columns[column].ShakeCards(0.2f, 200f, 45f);
                     Debug.Log(movedCards);
                     for (int i = indexInColumn; i < movedCards + indexInColumn; i++)
                     {

@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -9,6 +10,8 @@ public class Colimn : MonoBehaviour
     public List<Card> cards = new List<Card>();
     public int ID = 52;
     public Transform top;
+
+    Coroutine shakeCorutine = null;
 
 
     private void OnEnable()
@@ -198,6 +201,7 @@ public class Colimn : MonoBehaviour
                 completedSequence.Reverse();
                 AudioManager.Play("pile", 0.75f);
                 Background.Instance.Flash(1f);
+                GameManager.instance.ShakeCards(0.2f, 1500f, 45f);
                 return completedSequence;
             }
             else
@@ -243,5 +247,43 @@ public class Colimn : MonoBehaviour
 
         }
 
+    }
+
+
+
+
+    public void ShakeCards(float duration, float strenth, float speed)
+    {
+        if (shakeCorutine != null)
+        {
+            StopCoroutine(shakeCorutine);
+            shakeCorutine = null;
+        }
+        shakeCorutine = StartCoroutine(c_ShakeCards(UnityEngine.Random.Range(0f, 52f), duration, strenth, speed));
+    }
+
+    public IEnumerator c_ShakeCards(float seed, float duration, float strenth, float speed)
+    {
+        float timeScreenShake = 0;
+        do
+        {
+            foreach (Card card in cards)
+            {
+
+                card.rect.anchoredPosition += new Vector2(
+(0.4665f - Mathf.PerlinNoise(seed + card.sign * 13 + card.number, timeScreenShake * speed)) * (1f - timeScreenShake / duration) * strenth,
+(0.4665f - Mathf.PerlinNoise(seed + 52 + card.sign * 13 + card.number, timeScreenShake * speed)) * (1f - timeScreenShake / duration) * strenth
+                ) * Time.deltaTime;
+            }
+            timeScreenShake += Time.deltaTime;
+
+
+            if (timeScreenShake > duration)
+            {
+                StopCoroutine(shakeCorutine);
+                shakeCorutine = null;
+            }
+            yield return new WaitForEndOfFrame();
+        } while (true);
     }
 }
