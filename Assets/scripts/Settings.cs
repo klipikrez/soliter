@@ -13,6 +13,7 @@ public class SettingsClass
     public string name = "";
     public Color bgColor = new Color(0.19f, 0, 0);
     public int gameMode = 0;
+    public bool showTutorial = true;
 }
 
 public class Settings : MonoBehaviour
@@ -26,6 +27,7 @@ public class Settings : MonoBehaviour
     public ColorPreview colorPreview;
     public MediaSelectButtonBackground mediaSelectButtonBackground;
     public GameObject settingsCanvas;
+    public GameObject tutorialCanvas;
 
     public GameObject[] gamemodeButtons;
     public Background backgroundScript;
@@ -45,6 +47,12 @@ public class Settings : MonoBehaviour
         LoadBackground();
         backroundMode.Check();
         settingsCanvas.SetActive(false);
+
+        if(settingsClass.showTutorial)
+        {
+            tutorialCanvas.SetActive(true);
+            SetShowTutorial(false);
+        }
     }
     public SettingsClass GetSettingsClass()
     {
@@ -223,5 +231,12 @@ public class Settings : MonoBehaviour
         foreach (GameObject nutton in gamemodeButtons)
             nutton.SetActive(false);
         gamemodeButtons[i].SetActive(true);
+    }
+
+    public void SetShowTutorial(bool value)
+    {
+        SettingsClass settingsClass = GetSettingsClass();
+        settingsClass.showTutorial = value;
+        SaveSettings(settingsClass);
     }
 }
