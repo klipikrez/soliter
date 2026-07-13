@@ -1,0 +1,8 @@
+C:/Users/Nik0la/unity/Soliter/.utmp/RelWithDebInfo/52q3b4a4/armeabi-v7a/CMakeFiles/edit_cache.dir
+C:/Users/Nik0la/unity/Soliter/.utmp/RelWithDebInfo/52q3b4a4/armeabi-v7a/CMakeFiles/rebuild_cache.dir
+C:/Users/Nik0la/unity/Soliter/.utmp/RelWithDebInfo/52q3b4a4/armeabi-v7a/GameActivity/CMakeFiles/game.dir
+C:/Users/Nik0la/unity/Soliter/.utmp/RelWithDebInfo/52q3b4a4/armeabi-v7a/GameActivity/CMakeFiles/edit_cache.dir
+C:/Users/Nik0la/unity/Soliter/.utmp/RelWithDebInfo/52q3b4a4/armeabi-v7a/GameActivity/CMakeFiles/rebuild_cache.dir
+C:/Users/Nik0la/unity/Soliter/.utmp/RelWithDebInfo/52q3b4a4/armeabi-v7a/FramePacing/CMakeFiles/swappywrapper.dir
+C:/Users/Nik0la/unity/Soliter/.utmp/RelWithDebInfo/52q3b4a4/armeabi-v7a/FramePacing/CMakeFiles/edit_cache.dir
+C:/Users/Nik0la/unity/Soliter/.utmp/RelWithDebInfo/52q3b4a4/armeabi-v7a/FramePacing/CMakeFiles/rebuild_cache.dir

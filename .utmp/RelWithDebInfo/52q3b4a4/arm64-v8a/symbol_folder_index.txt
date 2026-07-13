@@ -1,0 +1,1 @@
+C:\Users\Nik0la\unity\Soliter\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\build\intermediates\cxx\RelWithDebInfo\52q3b4a4\obj\arm64-v8a
