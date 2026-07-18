@@ -9,6 +9,7 @@ public class SettingsClass
 {
     public int cardBack = 1;
     public float volume = 0.52f;
+    public float musicVolume = 1f;
     public int background = 0;
     public string name = "";
     public Color bgColor = new Color(0.19f, 0, 0);
@@ -20,7 +21,8 @@ public class Settings : MonoBehaviour
 {
     public List<Image> cardImages = new List<Image>();
     public CreateButtons createButtons;
-    public Slider audioSlider;
+    public Slider audioSliderMaster;
+    public Slider audioSliderMusic;
     public AudioMixer audioMixer;
     public Material backgroundShader;
     public BackroundMode backroundMode;
@@ -36,7 +38,7 @@ public class Settings : MonoBehaviour
     {
         SettingsClass settingsClass = GetSettingsClass();
         LoadCardBackTexture(settingsClass.cardBack);
-        LoadVolume(settingsClass.volume);
+        LoadVolume(settingsClass.volume, settingsClass.musicVolume);
         LoadGameMode(settingsClass.gameMode);
 
 
@@ -48,7 +50,7 @@ public class Settings : MonoBehaviour
         backroundMode.Check();
         settingsCanvas.SetActive(false);
 
-        if(settingsClass.showTutorial)
+        if (settingsClass.showTutorial)
         {
             tutorialCanvas.SetActive(true);
             SetShowTutorial(false);
@@ -82,7 +84,7 @@ public class Settings : MonoBehaviour
         SaveSettings(settingsClass);
 
         LoadCardBackTexture(settingsClass.cardBack);
-        LoadVolume(settingsClass.volume);
+        LoadVolume(settingsClass.volume, settingsClass.musicVolume);
         LoadBackground();
         backroundMode.Check();
     }
@@ -172,19 +174,37 @@ public class Settings : MonoBehaviour
         SetCardBackTexture(index);
     }
 
-    public void SetVolume(float value)
+    public void SetVolumeMaster(float masterValue)
+    {
+        SetVolume(masterValue, -1);
+    }
+
+    public void SetVolumeMusic(float musicValue)
+    {
+        SetVolume(-1, musicValue);
+    }
+
+    public void SetVolume(float masterValue, float musicValue)
     {
 
-        value /= 100;
+        masterValue /= 100;
+        musicValue /= 100;
+
         SettingsClass settingsClass = GetSettingsClass();
-        settingsClass.volume = value;
-        audioMixer.SetFloat("Master", (Mathf.Log10(value) * 20) != float.NegativeInfinity ? Mathf.Log10(value) * 20 : -52);
+
+        if (masterValue >= 0) settingsClass.volume = masterValue;
+        if (musicValue >= 0) settingsClass.musicVolume = musicValue;
+        Debug.Log("SetVolume: " + settingsClass.volume + " " + settingsClass.musicVolume);
+
+        audioMixer.SetFloat("Master", (Mathf.Log10(settingsClass.volume) * 20) != float.NegativeInfinity ? Mathf.Log10(settingsClass.volume) * 20 : -52);
+        audioMixer.SetFloat("Music", (Mathf.Log10(settingsClass.musicVolume) * 20) != float.NegativeInfinity ? Mathf.Log10(settingsClass.musicVolume) * 20 : -52);
         SaveSettings(settingsClass);
     }
-    public void LoadVolume(float value)
+    public void LoadVolume(float masterValue, float musicValue)
     {
-        SetVolume(value * 100);
-        audioSlider.value = value * 100;
+        SetVolume(masterValue * 100, musicValue * 100);
+        audioSliderMaster.value = masterValue * 100;
+        audioSliderMusic.value = musicValue * 100;
         //audioMixer.SetFloat("master", (Mathf.Log10(value) * 20) != float.NegativeInfinity ? Mathf.Log10(value) * 20 : -52);
     }
 
